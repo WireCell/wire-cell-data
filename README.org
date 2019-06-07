@@ -92,6 +92,9 @@ directory of =<impact>_<letter>.dat= files (and no other files).
 - ~dune_4.71.tar.gz~ DUNE APA Garfield data
 - [[./garfield-1d-3planes-21wires-6impacts-dune-v1.json.bz2]] WCT field response file from above.
 - [[./garfield-1d-boundary-path-rev-dune.json.bz2]] slight tweak in Garfield running to avoid overpopulating saddle points.
+- [[./garfield-11impacts-dune.json.bz2]] fine-grained field response with 11 impact positions instead of 6.
+- [[./garfield-1d-boundary-path-rev-dune-no-grid.json.bz2]] field response without grid plane.
+- [[./dune_nogrid_0d8x.json.bz2]] field response without grid plane and the bias voltage is reduced by 20 precent.
 
 MB has many sets of field response files.  The nominal set is called
 =ub_10= (uboone wire model with fields starting at 10cm from the
