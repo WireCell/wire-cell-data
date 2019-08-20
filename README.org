@@ -95,6 +95,7 @@ directory of =<impact>_<letter>.dat= files (and no other files).
 - [[./garfield-11impacts-dune.json.bz2]] fine-grained field response with 11 impact positions instead of 6.
 - [[./garfield-1d-boundary-path-rev-dune-no-grid.json.bz2]] field response without grid plane.
 - [[./dune_nogrid_0d8x.json.bz2]] field response without grid plane and the bias voltage is reduced by 20 precent.
+- [[./garfield-1d-boundary-path-rev-dune-ALL-COLLECTION.json.bz2]] replace field response of two induction plane with the collection one. It is used for simulation so that one can easily figure out the signal region in the induction plane.
 
 MB has many sets of field response files.  The nominal set is called
 =ub_10= (uboone wire model with fields starting at 10cm from the
