@@ -1,0 +1,35 @@
+# this is an ugly hack to install data files based on the value of
+# --install-config and the data files as listed in the params files
+# for a given experiment.  Instead of immediately executing it should
+# make waf tasks.
+import json
+import waflib.Context
+exps = getattr(bld.options, 'install_config', "").split(',')
+if exps:
+    cfgdir=bld.path.parent.find_node("cfg")
+    pfiles = set()
+    for exp in exps:
+        if exp == "all": exp="*"
+        for one in cfgdir.ant_glob("pgrapher/experiment/%s/params.jsonnet" % exp):
+            pfiles.add(one.abspath())
+    assert (pfiles)
+    dat_files = set()
+    for pfile in pfiles:
+        out = conf.cmd_and_log([bld.env.JSONNET[0],'-J',cfgdir.abspath(),pfile],
+                               output=waflib.Context.STDOUT,
+                               quiet=waflib.Context.BOTH)
+        dat = json.loads(out)
+        for k,v in dat.get("files",{}).items():
+            if not isinstance(v,list):
+                v = [v]
+            for one in v:
+                if not one: continue
+                one=one.strip()
+                if one: dat_files.add(one)
+    dat_files = list(dat_files)
+    dat_files.sort()
+    bld.install_files('${PREFIX}/share/wirecell', dat_files)
+
+    
+            
+    
