@@ -12,7 +12,6 @@ if exps:
         if exp == "all": exp="*"
         for one in cfgdir.ant_glob("pgrapher/experiment/%s/params.jsonnet" % exp):
             pfiles.add(one.abspath())
-    assert (pfiles)
     dat_files = set()
     for pfile in pfiles:
         out = conf.cmd_and_log([bld.env.JSONNET[0],'-J',cfgdir.abspath(),pfile],
