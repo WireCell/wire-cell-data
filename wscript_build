@@ -23,7 +23,7 @@ if exps:
                 v = [v]
             for one in v:
                 if not one: continue
-                one=one.strip()
+                one=str(one.strip())
                 if one: dat_files.add(one)
     dat_files = list(dat_files)
     dat_files.sort()
