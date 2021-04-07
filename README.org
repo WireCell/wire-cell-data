@@ -134,6 +134,22 @@ These are the files:
 - [[./ub-10-vy-ground-half.json.bz2]]
 - [[./ub-10-vy-ground-wnormed.json.bz2]]
 
+*** PCBro
+
+The [[https://github.com/brettviren/pcbro][PCBro]] package provides conversion to WCT format the responses
+related to strips+holes design calculated by Francesco Pietropaolo.
+They cover 0+/-5 strips but otherwise are in same form as for wires.
+
+- pcbro-response-h2mm0.json.bz2 50L detector with 2.5mm strips and
+  2.0mm holes (called ~dv-200v-h2mm0~ in PCBro)
+
+- pcbro-response-h2mm0.json.bz2 50L detector with 2.5mm strips and
+  2.5mm holes (called ~dv-200v-h2mm5~ in PCBro)
+
+- dunevd-resp-isoc3views.json.bz2 3-view "reference" with
+  c=4.9mm/i=7.35mm strips, 2.85mm isosceles-spaced holes of 2.3mm
+  diameter, 10mm distance between two PCBs of 3.2mm thickness.
+  (Called ~reference2views~ in PCBro).
 
 ** Noise
 
