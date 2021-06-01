@@ -134,6 +134,20 @@ These are the files:
 - [[./ub-10-vy-ground-half.json.bz2]]
 - [[./ub-10-vy-ground-wnormed.json.bz2]]
 
+** Zeroed
+
+An "almost 1D" FR can be generated from a full 2D FR with:
+
+#+begin_example
+$ wirecell-sigproc frzero -n 0 \
+    -o dune-garfield-1d565-wires0.json.bz2  \
+    dune-garfield-1d565.json.bz2
+#+end_example
+
+This example is provided.  This retains the fine-binned responses but
+just for impact positions in the 0-wire region.  ~-n 1~ would also
+include response for charge above the +/- 1 wire region, etc.
+
 ** PCBro
 
 The [[https://github.com/brettviren/pcbro][PCBro]] package provides WCT wires and fields files for "strips plus
