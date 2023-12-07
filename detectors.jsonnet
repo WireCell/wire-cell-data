@@ -90,7 +90,7 @@ local detectors = [
                            "icarus_noise_model_coh_by_board_TPCWW.json.bz2" ],
             ),
     detector("iceberg",
-             wires="iceberg-wires-larsoft-beta.json.bz2",
+             wires="iceberg-wires-larsoft-v2.json.bz2",
              fields="dune-garfield-1d565.json.bz2",
              noise="protodune-noise-spectra-v1.json.bz2",
             ),
