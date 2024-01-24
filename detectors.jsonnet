@@ -77,7 +77,7 @@ local detectors = [
             ),
     detector("icarus",
              wires="icarus-wires-dualanode-v5.json.bz2",
-             fields="garfield-icarus-fnal-rev2.json.bz2",
+             fields="garfield-icarus-fnal-rev1.json.bz2",
              chresp="icarus-channel-responses-v1.json.bz2",
              wiregroups="icarus_group_to_channel_map.json.bz2",
              noisegroups=[ "icarus_noise_model_int_by_board_TPCEE.json.bz2",
