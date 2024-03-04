@@ -13,7 +13,7 @@ as an array of string.
 // arguments into attributes of a dictionary keeping only non-null values.
 local detector(detname,         // canonical detector name
                wires,           // wires file
-               fields,          // field file(s)
+               fields,          // field file(s), first is "nominal"
                noise=null,      // incoherent noise spectra
                wiregroups=null, // coherent groups of wires
                noisegroups=null, // coherent noise spectra
@@ -23,7 +23,8 @@ local detector(detname,         // canonical detector name
     std.prune({
         detname:detname,
         wires:wires,
-        fields:fields,
+        field: if std.type(fields) == "array" then fields[0] else fields,
+        fields:if std.type(fields) == "array" then fields else [fields],
         noise:noise,
         chresp:chresp,
         qerr:qerr,
@@ -32,6 +33,14 @@ local detector(detname,         // canonical detector name
 
 // A temporary array
 local detectors = [
+    // The "base" detector is idealized.  Someday replace these with idealized
+    // equivalents but for now, copy from PDSP/uboone.
+    detector("base",
+             wires="protodune-wires-larsoft-v4.json.bz2",
+             fields="dune-garfield-1d565.json.bz2",
+             noise="protodune-noise-spectra-v1.json.bz2",
+             qerr="microboone-charge-error.json.bz2", // reuse uboone
+            ),
     detector("pdsp",
              wires="protodune-wires-larsoft-v4.json.bz2",
              fields="dune-garfield-1d565.json.bz2",

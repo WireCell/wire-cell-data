@@ -1,7 +1,20 @@
 {
+   "base": {
+      "detname": "base",
+      "field": "dune-garfield-1d565.json.bz2",
+      "fields": [
+         "dune-garfield-1d565.json.bz2"
+      ],
+      "noise": "protodune-noise-spectra-v1.json.bz2",
+      "qerr": "microboone-charge-error.json.bz2",
+      "wires": "protodune-wires-larsoft-v4.json.bz2"
+   },
    "dune-vd": {
       "detname": "dune-vd",
-      "fields": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "field": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "fields": [
+         "dunevd-resp-isoc3views-18d92.json.bz2"
+      ],
       "noise": "dunevd10kt-1x6x6-3view30deg-noise-spectra-v1.json.bz2",
       "qerr": "microboone-charge-error.json.bz2",
       "wires": "dunevd10kt-1x6x6-3view30deg-wires-v1.json.bz2"
@@ -9,57 +22,82 @@
    "dune-vd-coldbox": {
       "detname": "dune-vd-coldbox",
       "elresp": "dunevd-coldbox-elecresp-top-psnorm_400.json.bz2",
-      "fields": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "field": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "fields": [
+         "dunevd-resp-isoc3views-18d92.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "wires": "dunevdcb1-3view-wires-v2-splitanode.json.bz2"
    },
    "dune10kt-1x2x6": {
       "detname": "dune10kt-1x2x6",
-      "fields": "dune-garfield-1d60563.json.bz2",
+      "field": "dune-garfield-1d60563.json.bz2",
+      "fields": [
+         "dune-garfield-1d60563.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "wires": "dune10kt-1x2x6-wires-larsoft-v1.json.bz2"
    },
    "dunevd-crp2": {
       "detname": "dunevd-crp2",
       "elresp": "dunevd-coldbox-elecresp-top-psnorm_400.json.bz2",
-      "fields": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "field": "dunevd-resp-isoc3views-18d92.json.bz2",
+      "fields": [
+         "dunevd-resp-isoc3views-18d92.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "wires": "dunevdcrp2-wires-larsoft-v1.json.bz2"
    },
    "icarus": {
       "chresp": "icarus-channel-responses-v1.json.bz2",
       "detname": "icarus",
-      "fields": "garfield-icarus-fnal-rev2.json.bz2",
+      "field": "garfield-icarus-fnal-rev1.json.bz2",
+      "fields": [
+         "garfield-icarus-fnal-rev1.json.bz2"
+      ],
       "wires": "icarus-wires-dualanode-v5.json.bz2"
    },
    "iceberg": {
       "detname": "iceberg",
-      "fields": "dune-garfield-1d565.json.bz2",
+      "field": "dune-garfield-1d565.json.bz2",
+      "fields": [
+         "dune-garfield-1d565.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "wires": "iceberg-wires-larsoft-v2.json.bz2"
    },
    "pcbro": {
       "detname": "pcbro",
-      "fields": "FR_50L.json.bz2",
+      "field": "FR_50L.json.bz2",
+      "fields": [
+         "FR_50L.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "wires": "pcbro-wires.json.bz2"
    },
    "pdsp": {
       "detname": "pdsp",
-      "fields": "dune-garfield-1d565.json.bz2",
+      "field": "dune-garfield-1d565.json.bz2",
+      "fields": [
+         "dune-garfield-1d565.json.bz2"
+      ],
       "noise": "protodune-noise-spectra-v1.json.bz2",
       "qerr": "microboone-charge-error.json.bz2",
       "wires": "protodune-wires-larsoft-v4.json.bz2"
    },
    "sbnd": {
       "detname": "sbnd",
-      "fields": "garfield-sbnd-v1.json.bz2",
+      "field": "garfield-sbnd-v1.json.bz2",
+      "fields": [
+         "garfield-sbnd-v1.json.bz2"
+      ],
       "noise": "sbnd-noise-spectra-v1.json.bz2",
       "wires": "sbnd-wires-geometry-v0200.json.bz2"
    },
    "uboone": {
       "chresp": "microboone-channel-responses-v1.json.bz2",
       "detname": "uboone",
+      "field": "ub-10-half.json.bz2",
       "fields": [
          "ub-10-half.json.bz2",
          "ub-10-uv-ground-tuned-half.json.bz2",
