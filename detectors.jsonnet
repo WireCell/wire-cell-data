@@ -100,14 +100,10 @@ local detectors = [
             ),
     detector("pdhd",
              wires="protodunehd-wires-larsoft-v1.json.bz2",
-             fields=[           // will interpret APA index.
+             fields=[
+                 "dune-garfield-1d565.json.bz2",                 // nominal/good
                  "np04hd-garfield-6paths-mcmc-bestfit.json.bz2", // "bad" APA1 FR
-                 "dune-garfield-1d565.json.bz2",
-                 "dune-garfield-1d565.json.bz2",
-                 "dune-garfield-1d565.json.bz2",
              ],
-             // nominal field
-             field="dune-garfield-1d565.json.bz2",
              // note, a different noise file exists for 7.8 mV/fC gain.  
              noise="protodunehd-noise-spectra-14mVfC-v1.json.bz2",
              qerr="microboone-charge-error.json.bz2", // reuse uboone
