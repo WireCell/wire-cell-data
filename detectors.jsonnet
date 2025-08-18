@@ -2,12 +2,41 @@
 
 /**
 
-This file yields an object keyed by canonical Wire-Cell detector names.  Each
-attribute holds an object keyed by a canonical short name for a type of data
-file and the leaf values provide a file name as a string or multiple file names
-as an array of string.
+This file yields a dictionary mapping a canonical detector name to its "detector
+data object".  A detector data object provides data file names and high-level
+information.
+
+WCT configuration code is encouraged to include lines like:
+
+
+  local detectors = import "detectors.jsonnet";
+  local detdata = detectors.<name>;
+
+Or, better, provide detector-independent configuration with a top-level argument
+allowing the user to provide the canonical detector name.
+
+  local detectors = import "detectors.jsonnet";
+  function(detname)
+      local det = detectors[detname];
+      // ...
+
+See wirecell.util.detectors for a Python interface and
+
+  wcpy util detectors --help
+
+For a CLI.
 
 */
+
+// Explicitly define a length unit that is consistent with WCT's system of units
+// in order not to import wirecell.jsonnet here.
+local millimeter = 1.0;
+
+// These are also supplied in the FR files and can be conveniently seen with:
+//
+// wcpy sigproc response-info <detname>
+local hd_response_plane = 100.0*millimeter;
+local vd_response_plane = 189.2*millimeter;
 
 // A function to enforce the schema of each detector entry.  It transforms it's
 // arguments into attributes of a dictionary keeping only non-null values.
@@ -19,7 +48,9 @@ local detector(detname,         // canonical detector name
                noisegroups=null, // coherent noise spectra
                chresp=null,      // per channel response
                qerr=null,        // charge error
-               elresp=null) =    // electronics response (if not analytical CE)
+               elresp=null,      // electronics response (if not analytical CE)
+               // where the response plane is relative to the collection plane.
+               response_plane=hd_response_plane) =
     std.prune({
         detname:detname,
         wires:wires,
@@ -29,9 +60,11 @@ local detector(detname,         // canonical detector name
         chresp:chresp,
         qerr:qerr,
         elresp:elresp,
+        response_plane:response_plane,
     });
 
-// A temporary array
+
+// A temporary array - detname->object dict formed below.
 local detectors = [
     // The "base" detector is idealized.  Someday replace these with idealized
     // equivalents but for now, copy from PDSP/uboone.
@@ -66,12 +99,14 @@ local detectors = [
              fields="dunevd-resp-isoc3views-18d92.json.bz2",
              noise="dunevd10kt-1x6x6-3view30deg-noise-spectra-v1.json.bz2",
              qerr="microboone-charge-error.json.bz2", // reuse uboone
+             response_plane=vd_response_plane,
             ),
     detector("dune-vd-coldbox",
              wires="dunevdcb1-3view-wires-v2-splitanode.json.bz2",
              fields="dunevd-resp-isoc3views-18d92.json.bz2",
              noise="protodune-noise-spectra-v1.json.bz2", // reuse pdsp
-             elresp="dunevd-coldbox-elecresp-top-psnorm_400.json.bz2"
+             elresp="dunevd-coldbox-elecresp-top-psnorm_400.json.bz2",
+             response_plane=vd_response_plane,
             ),
     detector("dune10kt-1x2x6",
              wires="dune10kt-1x2x6-wires-larsoft-v1.json.bz2",
@@ -83,6 +118,7 @@ local detectors = [
              fields="dunevd-resp-isoc3views-18d92.json.bz2",
              noise="protodune-noise-spectra-v1.json.bz2",
              elresp="dunevd-coldbox-elecresp-top-psnorm_400.json.bz2",
+             response_plane=vd_response_plane,
             ),
     detector("icarus",
              wires="icarus-wires-dualanode-v5.json.bz2",
@@ -105,7 +141,7 @@ local detectors = [
             ),
     detector("pcbro",
              wires="pcbro-wires.json.bz2",
-             fields="FR_50L.json.bz2",
+             fields="pcbro-response-avg.json.bz2",
              noise="protodune-noise-spectra-v1.json.bz2",
             ),
 ];
