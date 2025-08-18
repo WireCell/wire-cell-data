@@ -46,9 +46,10 @@ local detector(detname,         // canonical detector name
                noise=null,      // incoherent noise spectra
                wiregroups=null, // coherent groups of wires
                noisegroups=null, // coherent noise spectra
-               chresp=null,      // per channel response
+               chresp=null,      // per-channel response (PerChannelResponse component)
                qerr=null,        // charge error
                elresp=null,      // electronics response (if not analytical CE)
+               wireresp=null,      // per-wire response (FilterResponse component)
                // where the response plane is relative to the collection plane.
                response_plane=hd_response_plane) =
     std.prune({
@@ -60,6 +61,7 @@ local detector(detname,         // canonical detector name
         chresp:chresp,
         qerr:qerr,
         elresp:elresp,
+        wireresp:wireresp,
         response_plane:response_plane,
     });
 
@@ -80,6 +82,14 @@ local detectors = [
              noise="protodune-noise-spectra-v1.json.bz2",
              qerr="microboone-charge-error.json.bz2", // reuse uboone
             ),
+    detector("pdhd",
+             wires="protodunehd-wires-larsoft-v1.json.bz2",
+             fields="np04hd-garfield-6paths-mcmc-bestfit.json.bz2",
+             # note, different noise for 7.8 mV/fC gain.  
+             noise="protodunehd-noise-spectra-14mVfC-v1.json.bz2",
+             qerr="microboone-charge-error.json.bz2", // reuse uboone
+             wireresp="protodunehd-field-response-filters.json.bz2",
+             ),
     detector("uboone",
              wires="microboone-celltree-wires-v2.1.json.bz2",
              fields=["ub-10-half.json.bz2",
