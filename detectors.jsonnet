@@ -41,22 +41,38 @@ local vd_response_plane = 189.2*millimeter;
 // A function to enforce the schema of each detector entry.  It transforms it's
 // arguments into attributes of a dictionary keeping only non-null values.
 local detector(detname,         // canonical detector name
-               wires,           // wires file
-               fields,          // field file(s), first is "nominal"
-               noise=null,      // incoherent noise spectra
-               wiregroups=null, // coherent groups of wires
-               noisegroups=null, // coherent noise spectra
-               chresp=null,      // per-channel response (PerChannelResponse component)
-               qerr=null,        // charge error
-               elresp=null,      // electronics response (if not analytical CE)
-               wireresp=null,      // per-wire response (FilterResponse component)
+               // wires file
+               wires,
+               // An array of field file(s).  Their order is up to
+               // interpretation by the detector configuration.  A nominal
+               // .field attribute is set to the first in the array if field is
+               // null.
+               fields,
+               // The nominal field.  If null, set to fields[0]
+               field=null,
+               // incoherent noise spectra
+               noise=null,  
+               // coherent groups of wires
+               wiregroups=null,
+               // coherent noise spectra
+               noisegroups=null,
+               // per-channel response (PerChannelResponse component)
+               chresp=null,
+               // charge error
+               qerr=null,
+               // electronics response (if not analytical CE)
+               elresp=null,   
+               // per-wire response (FilterResponse component)
+               wireresp=null,
                // where the response plane is relative to the collection plane.
                response_plane=hd_response_plane) =
     std.prune({
         detname:detname,
         wires:wires,
-        field: if std.type(fields) == "array" then fields[0] else fields,
-        fields:if std.type(fields) == "array" then fields else [fields],
+        field: if std.type(field) == "string"
+               then field
+               else self.fields[0],
+        fields: if std.type(fields) == "array" then fields else [fields],
         noise:noise,
         chresp:chresp,
         qerr:qerr,
@@ -84,8 +100,15 @@ local detectors = [
             ),
     detector("pdhd",
              wires="protodunehd-wires-larsoft-v1.json.bz2",
-             fields="np04hd-garfield-6paths-mcmc-bestfit.json.bz2",
-             # note, different noise for 7.8 mV/fC gain.  
+             fields=[           // will interpret APA index.
+                 "np04hd-garfield-6paths-mcmc-bestfit.json.bz2", // "bad" APA1 FR
+                 "dune-garfield-1d565.json.bz2",
+                 "dune-garfield-1d565.json.bz2",
+                 "dune-garfield-1d565.json.bz2",
+             ],
+             // nominal field
+             field="dune-garfield-1d565.json.bz2",
+             // note, a different noise file exists for 7.8 mV/fC gain.  
              noise="protodunehd-noise-spectra-14mVfC-v1.json.bz2",
              qerr="microboone-charge-error.json.bz2", // reuse uboone
              wireresp="protodunehd-field-response-filters.json.bz2",
@@ -94,7 +117,7 @@ local detectors = [
              wires="microboone-celltree-wires-v2.1.json.bz2",
              fields=["ub-10-half.json.bz2",
                      "ub-10-uv-ground-tuned-half.json.bz2",
-                     "ub-10-vy-ground-tuned-half.json.bz2"], // array!
+                     "ub-10-vy-ground-tuned-half.json.bz2"], // nominal and grounded regions
              noise="microboone-noise-spectra-v2.json.bz2",
              chresp="microboone-channel-responses-v1.json.bz2",
              qerr="microboone-charge-error.json.bz2", // reuse uboone
