@@ -206,4 +206,19 @@ these are provided.
 - [[./g4tuple-qsn-v1-fixed.json.bz2]]
 - [[./g4tuple-qsn-v2-fixed.json.bz2]]
 
+** DNN-ROI models
+
+TorchScript ~.ts~ models loaded by the
+[[https://github.com/WireCell/wire-cell-toolkit/tree/master/pytorch][~WireCellPytorch~]]
+package nodes (~TorchService~ +
+[[https://github.com/WireCell/wire-cell-toolkit/blob/master/pytorch/src/DNNROIFinding.cxx][~DNNROIFinding~]]
+or
+[[https://github.com/WireCell/wire-cell-toolkit/blob/master/pytorch/src/DNNROIFindingMultiPlane.cxx][~DNNROIFindingMultiPlane~]]).
+Each subdirectory contains the ~.ts~ file plus a small ~README.md~ describing
+provenance (source training repo, run-id, training shape, output activation).
+
+- [[./dnnroi/pdhd/CP43.ts]] — PDHD MobileNetV3-UNet trained on APA0 U+V
+  combined input ~(1, 3, 1600, 1500)~, output activation ~sigmoid~.  See
+  [[./dnnroi/pdhd/README.md]] for full provenance.
+
 
