@@ -10,6 +10,9 @@ in `[0, 1]` (no extra sigmoid needed in Wire-Cell).
 | `CP43.ts` | 3 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 3` (default) |
 | `kd_mbv3_transformer_bnKD_6ch.ts` | 6 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 6` |
 | `qat_mbv3_transformer_bnKD_6ch_int8.ts` | 6 | INT8 (QAT) | 10.8 MB | `run_nf_sp_dnnroi_evt.sh -n 6 -D cpu` |
+| `pipe_base_mbv3_6ch.ts` | 6 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 6` |
+| `pipe_distill_transformer_6ch.ts` | 6 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 6` |
+| `pipe_qat_transformer_6ch_int8.ts` | 6 | INT8 (QAT) | 10.8 MB | `run_nf_sp_dnnroi_evt.sh -n 6 -D cpu` |
 
 ## Provenance
 
@@ -27,6 +30,24 @@ in `[0, 1]` (no extra sigmoid needed in Wire-Cell).
 hits the `break` in the encoder loop; the INT8 quantized graph also cannot be
 scripted. The traced UNets are fully convolutional and run at both the
 per-plane (`800`) and stacked (`1600`) channel heights.
+
+### Pipeline-reproduced models (2026-05-16)
+
+`pipe_base_mbv3_6ch.ts`, `pipe_distill_transformer_6ch.ts`, and
+`pipe_qat_transformer_6ch_int8.ts` are the three models deployed by the
+end-to-end run documented in `DNN_ROI_SP/docs/full_pipeline.md` — a baseline,
+the best distillation, and its QAT INT8 model, all 6-channel and trained on the
+same corpus and split.
+
+| field | `pipe_base_mbv3_6ch.ts` | `pipe_distill_transformer_6ch.ts` | `pipe_qat_transformer_6ch_int8.ts` |
+|---|---|---|---|
+| Architecture | MobileNetV3-large UNet | MobileNetV3-large UNet | QuantizableMobileNetV3-UNet, INT8 |
+| Run-id | `pipe_base_mbv3_6ch` | `pipe_distill_transformer_6ch` | `pipe_qat_transformer_6ch` |
+| Training | 6-ch baseline, no KD | Transformer teacher + bottleneck-feature KD | QAT-KD, warm-started from the distillation |
+| Held-out test Dice / ROI-eff | 0.9120 / 0.7474 | 0.9107 / 0.7454 | 0.8900 / 0.7305 |
+
+All three pass the toolkit-vs-standalone replay validation (max abs diff
+< 1.4e-6; the INT8 model bit-exact) — see `full_pipeline.md` §4.3.
 
 ## Input layout
 
