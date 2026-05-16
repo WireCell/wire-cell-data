@@ -1,52 +1,84 @@
-# PDHD DNN-ROI TorchScript model
+# PDHD DNN-ROI TorchScript models
 
-`CP43.ts` — MobileNetV3-Large UNet, trained on PDHD APA0 simulation
-data, exported via `torch.jit.trace` at the inference shape used by
-the wire-cell-toolkit deployment.
+TorchScript (`.ts`) models loaded by the wire-cell-toolkit DNN-ROI nodes
+(`DNNROIFinding` / `DNNROIFindingMultiPlane`). All are exported with
+`DNN_ROI_SP/scripts/to_torchscript.py` and output `sigmoid` probabilities
+in `[0, 1]` (no extra sigmoid needed in Wire-Cell).
+
+| file | input ch | precision | size | run with |
+|---|---|---|---|---|
+| `CP43.ts` | 3 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 3` (default) |
+| `kd_mbv3_transformer_bnKD_6ch.ts` | 6 | FP32 | 20.4 MB | `run_nf_sp_dnnroi_evt.sh -n 6` |
+| `qat_mbv3_transformer_bnKD_6ch_int8.ts` | 6 | INT8 (QAT) | 10.8 MB | `run_nf_sp_dnnroi_evt.sh -n 6 -D cpu` |
 
 ## Provenance
 
-| field | value |
-|---|---|
-| Source repo | `/nfs/data/1/xqian/toolkit-dev/DNN_ROI_SP/` |
-| Source run-id | `bs1_20260511-210525` |
-| Source checkpoint | `checkpoints/bs1_20260511-210525/CP43.pth` |
-| Export script | `scripts/to_torchscript.py` |
-| TorchScript mode | trace (script fails due to `break` in encoder loop) |
-| Export shape | `(1, 3, 1600, 1500)` |
-| Output activation | `sigmoid` (probabilities in [0, 1]) |
+| field | `CP43.ts` | `kd_..._6ch.ts` | `qat_..._6ch_int8.ts` |
+|---|---|---|---|
+| Architecture | MobileNetV3-large UNet | MobileNetV3-large UNet | QuantizableMobileNetV3-UNet, INT8 |
+| Source repo | `DNN_ROI_SP/` | `DNN_ROI_SP/` | `DNN_ROI_SP/` |
+| Run-id | `bs1_20260511-210525` | `distill_mbv3_transformer_bnKD_6ch_th150_ep100_l40s_ddp2` | `qat_distill_mbv3_transformer_bnKD_6ch_th150_ep20_l40s_ddp2` |
+| Checkpoint | `CP43.pth` | `CP70.pth` | `qat_int8_state.pth` |
+| Training | 3-ch baseline | Transformer teacher + bottleneck-feature KD | QAT-KD-C, warm-started from `CP70.pth` |
+| TorchScript mode | trace | trace | trace |
+| Held-out test Dice / ROI-eff | — | 0.9118 / 0.7609 | 0.8932 / 0.7274 |
+
+`to_torchscript.py` falls back to `torch.jit.trace` because `torch.jit.script`
+hits the `break` in the encoder loop; the INT8 quantized graph also cannot be
+scripted. The traced UNets are fully convolutional and run at both the
+per-plane (`800`) and stacked (`1600`) channel heights.
 
 ## Input layout
 
-The model expects, in C++ tensor order:
+C++ tensor order is `(batch=1, ntags, nchannels, nticks)`:
+
+- `nchannels` = `800` per plane in per-plane (`pp`) mode, or `1600`
+  (U+V stacked) in stacked (`mp`) mode. The W collection plane is not consumed.
+- `nticks` = `1500`, from PDHD's raw `6000` after `tick_per_slice=4`
+  downsampling inside the C++ node.
+
+**3-channel model** (`CP43.ts`) — `ntags=3`, in order:
 
 ```
-(batch=1, ntags=3, nchannels=1600, nticks=1500)
+loose_lf{APA}, mp2_roi{APA}, mp3_roi{APA}
 ```
 
-- `ntags=3` comes from the trace tags `loose_lf{APA}`,
-  `mp2_roi{APA}`, `mp3_roi{APA}` produced by the standard PDHD
-  signal-processing chain.
-- `nchannels=1600` is **U + V planes stacked** (800 wires + 800
-  wires) — the first 1600 of PDHD's 2560 channels per APA. The W
-  collection plane is not consumed.
-- `nticks=1500` comes from PDHD's raw `nticks=6000` after
-  `tick_per_slice=4` downsampling inside the C++ node.
+**6-channel models** — `ntags=6`, in order:
 
-The shape is **locked** by the trace — feeding any other shape
-will produce wrong outputs (or fatal) at the model call.
+```
+loose_lf{APA}, mp2_roi{APA}, mp3_roi{APA}, tight_lf{APA}, decon_charge{APA}, gauss{APA}
+```
+
+All six tags are emitted by the standard PDHD `OmnibusSigProc` chain
+(debug + multi-plane-protection mode) and require no SP-config change.
+
+## Per-channel normalization (6-ch models)
+
+The 6-ch models are trained on inputs divided by **per-channel** z-scales:
+
+```
+[944.6256, 4000.0, 4000.0, 803.7348, 1927.6997, 530.75]
+```
+
+Wire-Cell's `DNNROIFinding` can only apply one **scalar** `input_scale` to all
+channels, so the per-channel division is **baked into the `.ts` module** as a
+fixed normalization layer. Consequently the 6-ch models must run with
+`input_scale = 1.0` — the `run_nf_sp_dnnroi_evt.sh -n 6` path sets this
+automatically (`dnnroi_pp.jsonnet` / `dnnroi_mp.jsonnet`). `CP43.ts` keeps the
+C++ default `input_scale = 1/4000`.
 
 ## Consumer
 
-This `.ts` is loaded by the wire-cell-toolkit C++ node
-`DNNROIFindingMultiPlane` (see
-`toolkit/pytorch/src/DNNROIFindingMultiPlane.cxx`). The jsonnet
-template that wires it in is
-`cfg/pgrapher/experiment/pdhd/dnnroi_mp.jsonnet`.
+Loaded by the toolkit C++ nodes `DNNROIFinding` (per-plane, default) and
+`DNNROIFindingMultiPlane` (stacked). Wired by
+`cfg/pgrapher/experiment/pdhd/dnnroi_pp.jsonnet` and `dnnroi_mp.jsonnet`;
+driven by `wcp-porting-img/pdhd/run_nf_sp_dnnroi_evt.sh`
+(`-n 3|6` selects the input-channel set, `-M <model>` selects the `.ts`).
 
 ## Limitations
 
-- Trained on **APA0 only**. Inference on APAs 1–3 is out-of-domain;
-  quality is not guaranteed and not benchmarked yet.
-- W plane is not processed (model has no W-plane head). Downstream
-  jsonnet routes the W plane through a `PlaneSelector` passthrough.
+- Trained on **APA0 only**. Inference on APAs 1–3 is out-of-domain.
+- W plane is not processed; downstream jsonnet routes it through a
+  `PlaneSelector` passthrough.
+- The INT8 QAT model runs on **CPU only** (x86/fbgemm quantized backend);
+  it cannot be placed on a GPU device.
