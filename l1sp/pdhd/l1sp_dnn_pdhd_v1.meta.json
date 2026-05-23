@@ -1,8 +1,8 @@
 {
-  "experiment_dir": "/nfs/data/1/xqian/toolkit-dev/l1sp_dl_tagger/experiments/stage_a_pu_round2",
+  "experiment_dir": "/nfs/data/1/xqian/toolkit-dev/l1sp_dl_tagger/experiments/stage_a_pu_round3",
   "vae_ckpt": "/nfs/data/1/xqian/toolkit-dev/l1sp_dl_tagger/experiments/stage_b_vae/model_n16.pt",
   "vae_n_lat": 16,
-  "git_sha": "940d180c425a03b9287f5d5856e314e207b24f41",
+  "git_sha": "70a8564286e2cfa4006c6efc3cb83d610187b19a",
   "nbin": 256,
   "amp_floor": 1.0,
   "n_features": 30,
@@ -70,8 +70,8 @@
     "core_raw_asym_wide"
   ],
   "kl_index": 29,
-  "default_threshold": 0.94,
-  "threshold_notes": "0.94 corresponds to p99.9 of the round-2 data-corpus score distribution; matches the bimodal-mode separator called out in experiments/stage_a_pu_round2/notes.md",
+  "default_threshold": 0.99,
+  "threshold_notes": "default_threshold=0.99 \u2014 set by --default-threshold at export time. Convention is to use the p99.9 of the data-corpus score distribution from the training run; see the experiment dir's notes.md for the value that was promoted.",
   "model_io": {
     "forward.inputs": [
       {
