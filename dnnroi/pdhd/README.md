@@ -85,16 +85,31 @@ Wire-Cell's `DNNROIFinding` can only apply one **scalar** `input_scale` to all
 channels, so the per-channel division is **baked into the `.ts` module** as a
 fixed normalization layer. Consequently the 6-ch models must run with
 `input_scale = 1.0` — the `run_nf_sp_dnnroi_evt.sh -n 6` path sets this
-automatically (`dnnroi_pp.jsonnet` / `dnnroi_mp.jsonnet`). `CP43.ts` keeps the
-C++ default `input_scale = 1/4000`.
+automatically (`dnnroi_pp.jsonnet`). `CP43.ts` keeps the C++ default
+`input_scale = 1/4000`.
+
+## Tick padding
+
+The C++ node rebins the time axis by `tick_per_slice=4` before inference and
+needs the input tick count to be a multiple of the model's stride alignment.
+For the PDHD MobileNetV3-large UNet (no deep stride-2 cascade in the tick
+axis: post-rebin width 1500 = 4·375 is not divisible by 8 or higher powers
+of 2), the alignment requirement is just `nticks % tick_per_slice == 0`,
+i.e. **`nticks` must be a multiple of 4**. PDHD's standard `nticks=6000`
+satisfies this with no padding.
+
+The `dnnroi_pp.jsonnet` for PDHD leaves `tick_pad_multiple` unset (defaults
+to `tick_per_slice=4`). The C++ node pads to the next 4-multiple before
+inference, then crops back to `input_ticks` — a no-op for any
+`nticks % 4 == 0` (including 6000, 6400, 8000).
 
 ## Consumer
 
-Loaded by the toolkit C++ nodes `DNNROIFinding` (per-plane, default) and
-`DNNROIFindingMultiPlane` (stacked). Wired by
-`cfg/pgrapher/experiment/pdhd/dnnroi_pp.jsonnet` and `dnnroi_mp.jsonnet`;
-driven by `wcp-porting-img/pdhd/run_nf_sp_dnnroi_evt.sh`
-(`-n 3|6` selects the input-channel set, `-M <model>` selects the `.ts`).
+Loaded by the toolkit C++ node `DNNROIFinding` (per-plane sequential: U
+and V each run their own forward call sharing one TorchService). Wired by
+`cfg/pgrapher/experiment/pdhd/dnnroi_pp.jsonnet`; driven by
+`wcp-porting-img/pdhd/run_nf_sp_dnnroi_evt.sh` (`-n 3|6` selects the
+input-channel set, `-M <model>` selects the `.ts`).
 
 ## Limitations
 

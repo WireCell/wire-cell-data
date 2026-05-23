@@ -134,12 +134,44 @@ approximation; the unified vs split study
 (`DNN_ROI_SP/docs/pdvd_unified_vs_split_study.md`) shows one mixed model
 matches the per-half specialists, so a single set is shipped.
 
+## Tick padding
+
+The C++ node rebins the time axis by `tick_per_slice=4` before inference;
+the PDVD MobileNetV3-large UNet was trained at post-rebin width
+**1600** (= `6400/4`), and 1600 = 64·25 has five spare factors of 2, so
+the deployed `.ts` has **5 stride-2 down/up levels** in the tick axis
+post-rebin. To survive that cascade the post-rebin width must be
+divisible by 2⁵ = 32, i.e. the input `nticks` must be a multiple of
+`tick_per_slice · 32 = 4·32 = 128`.
+
+`cfg/pgrapher/experiment/protodunevd/dnnroi_pp.jsonnet` sets
+`tick_pad_multiple=128` by default; the C++ `DNNROIFinding` node then
+pads the input ticks up to the next 128-multiple before inference and
+crops the output back to the original `input_ticks`.
+
+| input `nticks` | padded `model_ticks` | output cropped to |
+|---|---|---|
+| 6000 | 6016 (= 47·128) | 6000 |
+| 6400 | 6400 (already 50·128) | 6400 |
+| 8000 | 8064 (= 63·128) | 8000 |
+
+A mismatch surfaces as a tensor-shape error inside the model at runtime,
+not as a toolkit-side check, so do not lower `tick_pad_multiple` for
+these models.
+
 ## Consumer
 
-Loaded by the toolkit C++ node `DNNROIFindingMultiPlane`. Wired by
-`cfg/pgrapher/experiment/protodunevd/dnnroi_mp.jsonnet`; driven by
-`DNN_ROI_SP/simulation/toolkit/pdvd/run_nf_sp_dnnroi_evt.sh` (`-M <model>`
-selects the `.ts`).
+Loaded by the toolkit C++ node `DNNROIFinding` (per-plane sequential:
+U and V each run their own forward call sharing one TorchService —
+analogous to the PDHD pp wiring). Wired by
+`cfg/pgrapher/experiment/protodunevd/dnnroi_pp.jsonnet`; driven by
+`wcp-porting-img/pdvd/run_nf_sp_dnnroi_evt.sh` (`-M <model>` selects the
+`.ts`).
+
+Note: the PDVD students were trained on stacked U+V at ~952 channel-axis
+rows; per-plane inference (~476 rows) is structurally identical to PDHD
+pp mode but a per-plane vs stacked side-by-side validation analogous to
+PDHD's `DNN_ROI_SP/scripts/test_per_plane_ts.py` is still pending.
 
 ## Limitations
 
