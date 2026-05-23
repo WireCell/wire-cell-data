@@ -1,10 +1,24 @@
 # PDVD DNN-ROI TorchScript models
 
 TorchScript (`.ts`) models loaded by the wire-cell-toolkit DNN-ROI node
-`DNNROIFindingMultiPlane` for ProtoDUNE Vertical Drift. All are exported with
-`DNN_ROI_SP/scripts/to_torchscript.py` from the full-corpus 6-channel SDCC
-training campaign (DAGMan 287, 2026-05-20/21) and output `sigmoid`
-probabilities in `[0, 1]` (no extra sigmoid needed in Wire-Cell).
+`DNNROIFinding` (single-plane, per-plane sequential) for ProtoDUNE Vertical
+Drift. All are exported with `DNN_ROI_SP/scripts/to_torchscript.py` from the
+full-corpus 6-channel SDCC training campaign (DAGMan 287, 2026-05-20/21) and
+output `sigmoid` probabilities in `[0, 1]` (no extra sigmoid needed in
+Wire-Cell).
+
+> **2026-05-23 retrace.** The shipped `.ts` files were originally traced at
+> the stacked-plane shape `(1, 6, 952, 1600)` and crashed when fed the
+> per-plane shape `(1, 6, 476, 1600)` that the deployed `DNNROIFinding`
+> chain actually produces (119-vs-120 cat mismatch in `mobilenetv3_unet`'s
+> decoder skip at H=476). All five `.ts` files have been re-traced from
+> the same canonical checkpoints at the per-plane input shape; the trace
+> now records the model's runtime `F.interpolate` size-fixup at the
+> failing decoder layer (an aligned 120→119 bilinear, identity on
+> matched layers). Standalone replay through the re-traced
+> `pipe_distill_nestedunet_6ch.ts` reproduces the toolkit output to
+> max-abs `~5×10⁻⁷` on all 8 anodes × 2 induction planes for run 039324
+> evt 0 (`DNN_ROI_SP/scripts/verify_wirecell_dnn.py`).
 
 ## Production deployables
 
@@ -93,14 +107,19 @@ eager-vs-TorchScript `allclose` (max abs diff 0.00e+00 for all five files).
 C++ tensor order is `(batch=1, ntags, nchannels, nticks)`:
 
 - `ntags` = **6**.
-- `nchannels` = **952** = the two induction planes stacked (U 476 + V 476).
-  `DNNROIFindingMultiPlane` is configured with `planes:[0,1]`; the W collection
-  plane is not consumed (passed through from standard SP gauss).
+- `nchannels` = **476** per plane. The two induction planes U and V are
+  processed sequentially by two `DNNROIFinding` nodes per anode (sharing a
+  single TorchService); the W collection plane is not consumed (passed
+  through from standard SP gauss). See
+  `cfg/pgrapher/experiment/protodunevd/dnnroi_pp.jsonnet`.
 - `nticks` = **1600**, from PDVD's raw `6400` ticks after `tick_per_slice=4`
   downsampling inside the C++ node.
 
-This `(1, 6, 952, 1600)` toolkit input matches the PDVD training shape exactly
-(`x_range=[0,952]`, `y_range=[0,1600]`).
+The toolkit input per call is `(1, 6, 476, 1600)`. The PDVD students were
+trained on **stacked U+V at (1, 6, 952, 1600)**; per-plane deployment is
+structurally compatible (MobileNetV3-large is fully convolutional on the
+channel axis), and the re-traced `.ts` files include the runtime
+size-fixup the U-Net needs at this shape (see top-of-file note).
 
 **6-channel input** — `ntags=6`, trace tags in order:
 
@@ -116,10 +135,10 @@ order matches the PDHD 6-ch sibling exactly.
 ## Per-channel normalization
 
 The 6-ch models are trained on inputs divided by **per-channel** z-scales.
-Wire-Cell's `DNNROIFindingMultiPlane` applies one scalar `input_scale`, so the
+Wire-Cell's `DNNROIFinding` applies one scalar `input_scale`, so the
 per-channel division is baked into each `.ts` as a fixed normalization layer;
 the models run with `input_scale = 1.0` (set by
-`protodunevd/dnnroi_mp.jsonnet`).
+`protodunevd/dnnroi_pp.jsonnet`).
 
 A single set is baked into all `.ts` files — the **cross-anode mean**:
 
@@ -165,13 +184,15 @@ Loaded by the toolkit C++ node `DNNROIFinding` (per-plane sequential:
 U and V each run their own forward call sharing one TorchService —
 analogous to the PDHD pp wiring). Wired by
 `cfg/pgrapher/experiment/protodunevd/dnnroi_pp.jsonnet`; driven by
+`toolkit/pdvd/run_nf_sp_dnnroi_evt.sh` and
 `wcp-porting-img/pdvd/run_nf_sp_dnnroi_evt.sh` (`-M <model>` selects the
 `.ts`).
 
-Note: the PDVD students were trained on stacked U+V at ~952 channel-axis
-rows; per-plane inference (~476 rows) is structurally identical to PDHD
-pp mode but a per-plane vs stacked side-by-side validation analogous to
-PDHD's `DNN_ROI_SP/scripts/test_per_plane_ts.py` is still pending.
+The C++ `DNNROIFinding` node honors `debugfile` (set via the chain's
+`-X <basename>` flag) and writes one `{basename}_anode{N}_{plane}_call0.pt`
+per call containing `(input, output, meta)` — loadable with
+`DNN_ROI_SP/scripts/verify_wirecell_dnn.py` for offline 1:1 replay
+against the same `.ts`.
 
 ## Limitations
 
