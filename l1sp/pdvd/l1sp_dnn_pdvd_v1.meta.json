@@ -1,0 +1,112 @@
+{
+  "experiment_dir": "/nfs/data/1/xqian/toolkit-dev/l1sp_dl_tagger/experiments/stage_a_pu_round2_pdvd",
+  "vae_ckpt": "/nfs/data/1/xqian/toolkit-dev/l1sp_dl_tagger/experiments/stage_b_vae/model_n16.pt",
+  "vae_n_lat": 16,
+  "git_sha": "cd038ae0da106fd215a54a061824daa835f05fc6",
+  "nbin": 256,
+  "amp_floor": 1.0,
+  "n_features": 30,
+  "feature_order": [
+    "nbin_fit",
+    "temp_sum",
+    "temp1_sum",
+    "temp2_sum",
+    "max_val",
+    "min_val",
+    "prev_gap",
+    "next_gap",
+    "flag",
+    "ratio",
+    "temp_sum_pos",
+    "temp_sum_neg",
+    "n_above_pos",
+    "n_above_neg",
+    "argmax_tick",
+    "argmin_tick",
+    "sig_peak",
+    "sig_integral",
+    "gmax",
+    "gauss_fill",
+    "gauss_fwhm_frac",
+    "roi_energy_frac",
+    "raw_asym_wide",
+    "core_lo",
+    "core_hi",
+    "core_length",
+    "core_fill",
+    "core_fwhm_frac",
+    "core_raw_asym_wide",
+    "vae_kl"
+  ],
+  "scalar_feature_order": [
+    "nbin_fit",
+    "temp_sum",
+    "temp1_sum",
+    "temp2_sum",
+    "max_val",
+    "min_val",
+    "prev_gap",
+    "next_gap",
+    "flag",
+    "ratio",
+    "temp_sum_pos",
+    "temp_sum_neg",
+    "n_above_pos",
+    "n_above_neg",
+    "argmax_tick",
+    "argmin_tick",
+    "sig_peak",
+    "sig_integral",
+    "gmax",
+    "gauss_fill",
+    "gauss_fwhm_frac",
+    "roi_energy_frac",
+    "raw_asym_wide",
+    "core_lo",
+    "core_hi",
+    "core_length",
+    "core_fill",
+    "core_fwhm_frac",
+    "core_raw_asym_wide"
+  ],
+  "kl_index": 29,
+  "default_threshold": 0.16,
+  "threshold_notes": "default_threshold=0.16 \u2014 set by --default-threshold at export time. Convention is to use the p99.9 of the data-corpus score distribution from the training run; see the experiment dir's notes.md for the value that was promoted.",
+  "model_io": {
+    "forward.inputs": [
+      {
+        "name": "waveform",
+        "shape": [
+          "B",
+          1,
+          2,
+          256
+        ],
+        "dtype": "float32",
+        "notes": "channel 0 = raw/scale, channel 1 = decon/scale, where scale = max(|raw|.max, |decon|.max, 1.0); window = full ROI right-padded to 256, OR \u00b1128 ticks centered on argmax(|decon|) clamped to ROI bounds. The dim-1 axis is a dummy to satisfy WCT's Pytorch::from_itensor 4-D requirement."
+      },
+      {
+        "name": "scalars",
+        "shape": [
+          "B",
+          1,
+          1,
+          29
+        ],
+        "dtype": "float32",
+        "notes": "29 scalars in scalar_feature_order"
+      }
+    ],
+    "forward.output": {
+      "name": "score",
+      "shape": [
+        "B",
+        1,
+        1,
+        1
+      ],
+      "dtype": "float32",
+      "notes": "sigmoid in [0, 1]; cut at default_threshold"
+    }
+  }
+}
