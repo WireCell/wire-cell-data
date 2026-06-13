@@ -43,9 +43,16 @@ are not fetched here.
 | `OpDets[].h,w` | `ArapucaSingleAcceptanceWindow` box (y=10, z=47.75 cm), gdml `protodunehd_v2_refactored`; single & double readout share these in-plane dims |
 | `OpDets[].type/orientation` | `0` / `0` — all flat X-ARAPUCAs, anode/cathode-facing |
 
-`vuv_absorption_length` is set to `2000` cm (effectively off), matching the SBND
-convention: VUV attenuation is already folded into the Gaisser–Hillas fit, so the
-extra `exp(-d/λ)` factor is left near-unity to avoid double-counting.
+`vuv_absorption_length` is set to **`100` cm** (was `2000` = effectively off). The
+SBND convention leaves it near-unity because VUV attenuation is meant to be folded
+into the Gaisser–Hillas fit, but on PDHD crosser data the GH-only prediction is
+~2.5× too diffuse (half the predicted light lands on PMTs that measured 0). An
+effective `exp(-d/λ)` with λ≈100 cm (the canonical LAr 128 nm value) re-localises
+the prediction onto the data: on the cleanest bright crosser the predicted
+concentration N90 drops 17→6 (measured 7) and the directly-lit-PMT scale moves from
+0.54 to 1.00. This is an **empirical spread correction** (it does mildly
+double-count with the GH fit), pinned by ~1–2 clean crossers — provisional. See
+`<wcp-porting-img>/pdhd/docs/ql-light-normalization-study.md`.
 
 ## Remaining work (not data files — toolkit code/config)
 

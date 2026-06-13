@@ -115,7 +115,7 @@
     "active_center_z": 231.2665,
     "active_size_z": 462.733,
     "cathode_x": 0.0,
-    "vuv_absorption_length": 2000.0
+    "vuv_absorption_length": 100.0
   },
   "OpDets": [
     {
