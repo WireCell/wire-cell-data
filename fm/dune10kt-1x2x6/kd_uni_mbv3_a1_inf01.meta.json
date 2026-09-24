@@ -1,0 +1,126 @@
+{
+ "name": "kd_uni_mbv3_a1_inf01",
+ "description": "WC_FM_DINO unified cross-plane dense MobileNetV3-Large U-Net student (docs/37 M2), 128-d trunk features; TorchScript via torch.jit.script for wire-cell-toolkit TorchService",
+ "checkpoint": {
+  "path": "kd_checkpoints/kd_uni_mbv3_a1_inf01/checkpoint_step36000.pt",
+  "sha256": "5ed9c29053bea52142ddf9510e7b2836495d728414c9798b452b779d771e1440",
+  "bytes": 49126754,
+  "source": "dunesub01.sdcc.bnl.gov:/gpfs/mnt/gpfs01/dayabay/xqian/DUNE/WC_FM_DINO/CONDOR_OUT/kd_campaign/checkpoints/kd_uni_mbv3_a1_inf01/checkpoint_step36000.pt"
+ },
+ "kd_config": {
+  "backbone_name": "mbv3_mae",
+  "feature_dim": 128,
+  "feat_min_val": 3.75,
+  "feat_max_val": 83861.2,
+  "bottleneck_depth": 1,
+  "use_stage3": false,
+  "encoding_range": 125.0,
+  "encoding_dim": 32,
+  "teacher_ckpt_tag": "pm4_uvw_w0",
+  "teacher_mode": "tokenlocalraw",
+  "covered_only": true,
+  "loss_type": "cosine",
+  "n_components_target": 64,
+  "init_from": "/home/DUNE/xqian/cache/WC_FM_DINO/kd_inputs/CONDOR_OUT_mbv3_mae_train_wide128_occ0p3_mask50_checkpoints_checkpoint_epoch2.pt",
+  "anchor_weight": 0.0,
+  "kd_weight": 1.0,
+  "rel_weight": 0.0,
+  "rel_type": "sp",
+  "rel_max_pairs": 4096,
+  "mgd_weight": 0.0,
+  "mgd_mask_ratio": 0.5,
+  "infonce_weight": 0.1,
+  "infonce_temp": 0.1,
+  "infonce_samples": 256,
+  "infonce_window": 64,
+  "infonce_dilate": 2,
+  "multi_plane": true,
+  "plane_conditioning": false,
+  "per_plane_projector": true,
+  "planes": "UVW",
+  "event_start": 500,
+  "n_events": 6000,
+  "epochs": 0,
+  "step": 0
+ },
+ "KDConfig": {
+  "backbone_name": "mbv3_mae",
+  "feature_dim": 128,
+  "feat_min_val": 3.75,
+  "feat_max_val": 83861.2,
+  "bottleneck_depth": 1,
+  "use_stage3": false,
+  "encoding_range": 125.0,
+  "encoding_dim": 32,
+  "teacher_ckpt_tag": "pm4_uvw_w0",
+  "teacher_mode": "tokenlocalraw",
+  "covered_only": true,
+  "loss_type": "cosine",
+  "n_components_target": 64,
+  "init_from": "/home/DUNE/xqian/cache/WC_FM_DINO/kd_inputs/CONDOR_OUT_mbv3_mae_train_wide128_occ0p3_mask50_checkpoints_checkpoint_epoch2.pt",
+  "anchor_weight": 0.0,
+  "kd_weight": 1.0,
+  "rel_weight": 0.0,
+  "rel_type": "sp",
+  "rel_max_pairs": 4096,
+  "mgd_weight": 0.0,
+  "mgd_mask_ratio": 0.5,
+  "infonce_weight": 0.1,
+  "infonce_temp": 0.1,
+  "infonce_samples": 256,
+  "infonce_window": 64,
+  "infonce_dilate": 2,
+  "multi_plane": true,
+  "plane_conditioning": false,
+  "per_plane_projector": true,
+  "planes": "UVW",
+  "event_start": 500,
+  "n_events": 6000,
+  "epochs": 8,
+  "step": 36000
+ },
+ "dropped_state_dict_keys": [
+  "charge_head.bias",
+  "charge_head.weight",
+  "occupancy_head.bias",
+  "occupancy_head.weight"
+ ],
+ "export": {
+  "torch": "2.5.1+cu121",
+  "torchvision": "0.20.1+cu124",
+  "python": "3.11.9",
+  "mode": "torch.jit.script (not traced, not frozen)",
+  "wc_fm_dino_git": "4eab794ff96a6295f01a5faefba309b364e8530a-dirty",
+  "date": "2026-09-24 09:42:22 PDT",
+  "feat_indices": [
+   0,
+   2,
+   4,
+   7,
+   13
+  ],
+  "n_params": 3452121
+ },
+ "contract": {
+  "input": "[1, 2, H, W] float32 NCHW, batch 1; channel 0 = FeatureLogTransform(charge) with the plane's VIEW_NORM (y = 2*(log10(q+m)-log10 m)/(log10(M+m)-log10 m) - 1, no clip); channel 1 = 1.0 at active pixels, 0 elsewhere; H = channels (anode-local, rebased), W = time slices of 4 ticks; tight bounding box of the active pixels, floored at 64 in both dims by high-side zero padding; per-event, per-plane canvases",
+  "output": "[1, 128, H, W] float32, the trunk feature at every pixel; gather at active pixels",
+  "view_norm": {
+   "U": [
+    2.77,
+    144977.0
+   ],
+   "V": [
+    2.97,
+    157944.0
+   ],
+   "W": [
+    3.75,
+    83861.2
+   ]
+  },
+  "min_canvas": 64,
+  "tick_span": 4,
+  "W_plane_layout": "columns 0-479 = channels 1600-2079 (WCT face 1, -x), 480-959 = 2080-2559 (face 0, +x)",
+  "pixel_value_scale": "0.25 * sum of 4 gauss ticks (doc 01 sec 2.1; to be fixed in F2)"
+ }
+}
