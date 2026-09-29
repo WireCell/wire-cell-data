@@ -37,3 +37,12 @@ wcfm doc 12), loaded by the toolkit `img` component `CascadeDeghosting` through 
 | `qhat` | f4 [N] | charge estimate, units of 1e4 e (not calorimetric: doc 11 sec 4.2) |
 
 The model must not write to its inputs (the service wraps them without a copy).
+
+## `_v2`: the lower-memory export (wcfm doc 15 round 2)
+
+`e2c_<level>_v2.ts` are the same checkpoints re-exported by `wcfm/scripts/d15_export.py` (`CascadeGNNLean`). The
+forward computes each node chunk's messages just before its update, from the edges whose source lies in the chunk,
+instead of holding six N x 64 message tensors per layer. The per-row accumulation order is unchanged, so `logit` and
+`qhat` are bitwise the v1 ones (checked on every level dump of 587/2 and 122/2, and by the toolkit byte gate on 23
+anode-events). The 4-wire forward's live-tensor peak on 587/2 falls from 1.32 to 1.03 GB, at the same speed.
+Selected by the wcfm knob `ml_model_suffix` (`run_img_evt.sh -M` uses `_v2`); sha256 in `SHA256SUMS_v2`.
