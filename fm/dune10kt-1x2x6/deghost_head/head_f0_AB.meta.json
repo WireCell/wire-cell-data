@@ -1,0 +1,9 @@
+{
+ "kind": "stage-A CrossHead (doc 21, f0 mode), mean of halves A and B",
+ "source": "/home/xqian/tmp/wcfm-d29/head_f0_AB.ts",
+ "source_sha256": "a7cf6a45767768453805ac233dea1f06123e88d06e32e33a55bbfd2413c1366b",
+ "inputs": "eU f4[N,128], eV f4[N,128], eW f4[N,128], has f4[N,3] (per-view means of the FM features over the cell active wires; zero and has=0 where none)",
+ "output": "score f4[N]",
+ "then": "per wire: log-softmax of the scores over the wire candidate cells; per cell: mean and min over its active wires (NaN -> graph column minimum)",
+ "exporter": "wcp-porting-img wcfm/scripts/d29_export_head.py"
+}

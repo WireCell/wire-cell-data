@@ -1,0 +1,60 @@
+{
+ "level": "L4_4",
+ "width": 4,
+ "superwire_k": 1,
+ "uses_bw_w": false,
+ "threshold": -0.3873957693576813,
+ "role": "keep: final 4-wire cells with mean logit >= threshold (threshold.json: doc 14 dev rule on the seed-mean held-out logits)",
+ "ensemble": "mean of (logit, qhat) over the five doc 29 AB fold-0 models, seeds 0-4",
+ "fold": 0,
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "arm": "e2-projq-fmc",
+ "columns": "doc 29 AB: head_f0_AB.ts columns",
+ "members": {
+  "0": {
+   "source": "/home/xqian/tmp/wcfm-d29/train_L4/ab/e2-projq-fmc_s0/models/e2-projq-fmc_s0_f0.pt",
+   "source_sha256": "4d317b81cbe1209314d8b0ce2acf7e2d2fc1618744f7b5ee945049b8ebd9fe66",
+   "best_ep": 9,
+   "pi": 0.3848763676973355
+  },
+  "1": {
+   "source": "/home/xqian/tmp/wcfm-d29/train_L4/ab/e2-projq-fmc_s1/models/e2-projq-fmc_s1_f0.pt",
+   "source_sha256": "fa25150a16f26bcc96a3079d378fe7b5fe16ac69b06b1ed6803183516bb71297",
+   "best_ep": 13,
+   "pi": 0.3848763676973355
+  },
+  "2": {
+   "source": "/home/xqian/tmp/wcfm-d29/train_L4/ab/e2-projq-fmc_s2/models/e2-projq-fmc_s2_f0.pt",
+   "source_sha256": "bde6701ec0962e29f9984b8abbc1e9f718b11757a3cc6a2aee5c0b4d1ebeecd4",
+   "best_ep": 12,
+   "pi": 0.3848763676973355
+  },
+  "3": {
+   "source": "/home/xqian/tmp/wcfm-d29/train_L4/ab/e2-projq-fmc_s3/models/e2-projq-fmc_s3_f0.pt",
+   "source_sha256": "abcf65b0e288761d827b2c8f9c4c145631bbbc50d07c415adcfed2c5ec65f9ed",
+   "best_ep": 4,
+   "pi": 0.3848763676973355
+  },
+  "4": {
+   "source": "/home/xqian/tmp/wcfm-d29/train_L4/ab/e2-projq-fmc_s4/models/e2-projq-fmc_s4_f0.pt",
+   "source_sha256": "3af2c3733567fc7d39cd8521e92d71ec3b285416af2f18c8baa26e7e52846724",
+   "best_ep": 14,
+   "pi": 0.3848763676973355
+  }
+ },
+ "hidden": 64,
+ "layers": 4,
+ "db": 18,
+ "dw": 4,
+ "torch": "2.5.1+cu121",
+ "inputs": "xb[N,18] f4 = the 15 doc 14 charge columns + [head score, per-wire log-softmax mean, per-wire log-softmax min] (doc 27 sec 1; stage-A head on the per-view FM means), wq[M] f4, wplane[M] i8, bw_src[E] i8, bw_dst[E] i8, bw_w[E] f4 (ignored), bb[B,2] i8, bb_in[I,2] i8, ww[K,2] i8 (pairs once)",
+ "outputs": "logit[N] f4 (seed mean), qhat[N] f4 (seed mean; Q0 = 1e4 e)",
+ "exported": "2026-10-04 05:21:36",
+ "exporter": "wcp-porting-img wcfm/scripts/d31_export.py"
+}
