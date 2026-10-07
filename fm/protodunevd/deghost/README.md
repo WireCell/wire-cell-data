@@ -1,52 +1,32 @@
-# ProtoDUNE-VD: coarse-to-fine learned deghosting models (TorchScript), round 2
+# ProtoDUNE-VD charge-only cascade deghoster (round 4, deployed 2026-10-07)
 
-The five levels of the `e2-projq` cascade (the charge-only conservation GNN of wcfm doc 09, the cascade of wcfm
-doc 12) **retrained on ProtoDUNE-VD** (8 CRP half-anodes, 60° strips, 7.65 / 7.65 / 5.10 mm pitch), loaded by the
-toolkit `img` component `CascadeDeghosting` through the `pytorch` service `TorchTensorSetService` (libtorch 2.8,
-CPU).  Training, deployment and validation: `wcp-porting-img` `pdvd/docs/nf_sp_img_clus/121_ml-deghosting-training-proposal.md`
-section 12 and `122_ml-deghosting-fdhd-vs-pdvd-and-data.md` section 8 (round 2, 2026-10-06; **round 1 of 10-05 was trained
-without the wire charge, a frame-time defect in the training dumps, and is replaced by these files**); the configs are `pdvd/d121/{img,wct-img-all}.jsonnet`, the runner
-`pdvd/d121/run_img_evt.sh -M`.  The FD-HD models in `../../dune10kt-1x2x6/deghost/` share the architecture and the
-I/O contract (their README) and nothing else: on PDVD they score at AP 0.59–0.62 (random 0.50).
+Five TorchScript levels for `CascadeDeghosting` (toolkit `img`); `levels.json` is the ladder with thresholds
+(`ml_levels`), final keep logit -2.0. Docs: wcp-porting-validation
+`pdvd/docs/nf_sp_img_clus/123_ml-deghosting-round3-busy-isochronous-beam.md` (this round), 121 and 122 (rounds 1-2).
 
-| file | level | cut width (strips) | super-wire k | threshold (logit) | role |
-|---|---|---|---|---|---|
-| `e2c_L0_U.ts` | 0 | uncut | 16 | -1.8312 | prune below |
-| `e2c_L1_32.ts` | 1 | 32 | 8 | -1.0290 | prune below |
-| `e2c_L2_16.ts` | 2 | 16 | 4 | -0.7475 | prune below |
-| `e2c_L3_8.ts` | 3 | 8 | 2 | -1.1095 | prune below |
-| `e2c_L4_4.ts` | 4 | 4 | 1 (real strips) | -2.0 | keep at or above |
+**Training sample:** 4,352 anode-event graphs from 544 simulated events: 200 CORSIKA cosmic events, and built from
+them 40 rotated, 24 three-cosmic overlay, 24 cosmic + rotated, 96 beam particle (e+, pi+, K+, mu+, p; 0.5-3 GeV/c,
+Geant4 gun at the beam entry) + cosmic, and 160 events with one muon at 0-2 degrees to the CRP planes. Five folds,
+fold 0 exported, one seed. Cross-validated AP 0.982 / 0.986 / 0.989 / 0.989 / 0.985.
 
-`levels.json` holds the same ladder in the `ml_levels` form the d121 `img.jsonnet` takes.
+**Held-out simulation, against round 2 (the previous content of this directory) and the production chain:**
 
-- **Training sample:** 200 CORSIKA cosmic events of the DNN-ROI campaign's Stage A deposits (`/home/xqian/work/data/
-  pdvd/generated`, q > 0 rows dropped), simulated by `pdvd/d121/wct-sim-depo-nf-sp-dnnroi.jsonnet` (data transport
-  constants, DNN-ROI + L1SP, wire file `protodunevd-wires-larsoft-v7-uvwfit`), 1,600 half-anode graphs, both drift
-  volumes; labels from `BlobDepoFill` (time offset 372 µs) on the 4-strip cells.  **No beam particles, no rotated or
-  gun events yet** (doc 121 §12.10): the keep threshold is set on the pooled held-out
-  cosmic cells, not on 0° muon slabs.
-- **Level graphs:** the toolkit's own `CascadeDeghosting` dumps (every level kept, `pdvd/d121/run_img_evt.sh -X`),
-  so the training inputs are the deployed C++ graph builder's.
-- **Models:** one per level, seed 0, fold 0 of five event folds (`/home/xqian/tmp/d121r2/train/<level>/models/
-  e2-projq_s0_f0.pt`; sha256 in each `.meta.json`); held-out AP 0.981 / 0.983 / 0.987 / 0.990 / 0.986 (levels 0–4).
-  Prune thresholds: 0.075 % of the dev true charge per level; keep threshold -2.0: the conservative point of
-  doc 122 §9.2 (99.83 % charge recall on the held-out cells, 0.01 % below keeping every arriving cell, ghost fraction
-  0.127). The ghost-fraction-0.2 rule of FD-HD gives -7.3968 here (a flat part of the curve); -0.830 = ghost fraction
-  0.1 keeps 99.48 %.
-- **Export:** `pdvd/scripts/d121/export.py` = wcfm `d15_export.CascadeGNNLean` (the lower-memory forward of the
-  FD-HD `_v2` files), `torch.jit.script` with torch 2.5.1.
-- **Parity:** C++ (libtorch, inside wire-cell) vs the scripted model in python on the same dumped graphs, held-out
-  event 200, 8 half-anodes, 182,868 nodes: max |Δ logit| 1.1e-5, 0 decision flips (`122_tables/r2_parity.md`).
-- **Charge unit:** `qhat` in units of 1e4 e as on FD-HD (the standardiser was refit on PDVD); the C++
-  `repair_q_floor` is set to 1.6e4 e in the d121 config.
+| sample | completeness: production / round 2 / round 4 | ghost area removed: production / round 2 / round 4 |
+|---|---|---|
+| cosmics (50 events) | 0.9907 / 0.9986 / 0.9988 | 0.386 / 0.656 / 0.654 |
+| beam + cosmic (25) | 0.9901 / 0.9985 / 0.9988 | 0.372 / 0.612 / 0.639 |
+| beam particle's own charge (25) | 0.9889 / 0.9946 / 0.9971 | - |
+| muon at 0-2 degrees to the CRP (50) | 0.9918 / 0.9974 / 0.9972 | 0.392 / 0.468 / 0.818 |
 
-Input / output contract: identical to `../../dune10kt-1x2x6/deghost/README.md`
-(`forward(xb, wq, wplane, bw_src, bw_dst, bw_w, bb, bb_in, ww) -> (logit, qhat)`; `bw_w` read on levels 0–3).
+C++ against python on the same graphs: largest logit difference 1.1e-5, no decision flips.
 
-- **Frame time:** the simulated SP frames of the training sample carry frame time 0. `CascadeDeghosting` reads its
-  charge at (slice start − frame time) / tick while `MaskSlice` slice starts are frame-relative, so a frame with a
-  non-zero time is read at the wrong ticks (doc 122 §3). Data SP frames have frame time 0. Toolkit knob `slice_start_relative` (default false) of
-  `CascadeDeghosting` / `CascadeDeghostingFM` reads such frames correctly; d121 `ml_slice_start_relative`.
-- **On data** (doc 122 §8.4): quiet half-anodes match simulation; on the busiest half-anodes zero-charge cells remain
-  in isochronous slices and the solved charge is 7–22 % below the production chain's on four of them. Not validated
-  after clustering.
+**Read before use:**
+- The doc's pre-registered rule was met only at this keep value (-2.0), which was chosen after the rule-selected
+  value (-3.296, the plateau rule of doc 122 sec 9.2 on this model's own curve) had been scored; the
+  ghost-fraction-0.2 rule value, -4.117, is kept in `e2c_L4_4.meta.json` as `threshold_rule_value`. Adopted by the owner
+  2026-10-07.
+- On the busiest beam-run data anodes (run 39305) this model removes more solved charge than the simulation
+  predicts (round 4 / production 0.83 at 10-20 k production objects, simulation 0.97). Whether that is ghost or
+  true charge is not known (doc 123 sec 6). No gate after clustering, no hand scan.
+- Frames must carry frame time 0, or set `slice_start_relative` (toolkit e2d4f34c; doc 122 sec 9).
+- Round 2 is this directory at wire-cell-data f397e0a.
