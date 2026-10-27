@@ -1,0 +1,4 @@
+{
+ "keep_logit": -0.8928844928741455,
+ "rule": "ghost fraction 0.2, pooled held-out 4-strip cells of the training events, L4_4 held-out logits, seed 0"
+}

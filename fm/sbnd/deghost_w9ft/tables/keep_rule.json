@@ -1,0 +1,6 @@
+{
+ "keep_logit": -3.1877079010009766,
+ "plateau_recall": 0.9952766372149576,
+ "below": 0.0001,
+ "rule": "doc 122 sec 9.2: true charge below the plateau, training-event CV logits"
+}
