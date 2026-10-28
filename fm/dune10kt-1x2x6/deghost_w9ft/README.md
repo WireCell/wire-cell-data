@@ -15,7 +15,7 @@ these files with the TLA `deghost_w9ft`. Detector: 12 APAs here (1x2x6), 4.67 / 
 | `e2c_L1_32.ts` | 1 | 32 | 8 | -2.2468 | prune below | 11 | `f2113aa21a166fd2` |
 | `e2c_L2_16.ts` | 2 | 16 | 4 | -2.1785 | prune below | 13 | `be9c15f65fcade10` |
 | `e2c_L3_8.ts` | 3 | 8 | 2 | -2.4514 | prune below | 11 | `03921bbdcb266d06` |
-| `e2c_L4_4.ts` | 4 | 4 | 1 | -0.8929 | keep at or above | 14 | `3877880d89ec63a2` |
+| `e2c_L4_4.ts` | 4 | 4 | 1 | +1.0751 (exported: -0.8929) | keep at or above | 14 | `3877880d89ec63a2` |
 
 `levels.json` is the same ladder in the `ml_levels` form `[level, width, k, threshold]` the imaging configs take; the
 L4_4 entry is the keep logit (ghost-fraction-0.2 rule, `tables/keep_rule.md`; `tables/keep_threshold.*` records the ghost-fraction-0.2
@@ -33,3 +33,8 @@ models' (SDCC part 38: not re-derived on the fine-tuned logits).
 - **FD-HD: no head stage.** The keep logit is on the plain cascade's L4_4 output (doc 53 §3.5 contract, SDCC agent 2026-10-26), so the imaging config runs these with `ml_head=false`; the doc 32 head stage (`../deghost_head/`) belongs to the `../deghost/` models.
 
 `SHA256SUMS` (from the export) covers the five `.ts`.
+
+- **FD-HD running condition (2026-10-28, Xin decisions 3/4, wcp pr_ml doc 30 secs 6-8):** the `levels.json` L4_4 keep is
+  **+1.0751** (was the exported -0.8929): the registered after-clustering operating point, at which the pooled S1 + W6 nu_e
+  post-clustering ghost-point share equals the doc 32 production chain's; confirmed on R (2001-2550). These models without the
+  head stage are the FD-HD imaging default (`wcfm/wct-img-all.jsonnet` `deghost_w9ft` true). The L0-L3 thresholds are unchanged.
