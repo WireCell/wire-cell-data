@@ -15,7 +15,7 @@ these files with the TLA `deghost_w9ft`. Detector: 4 APAs, 4.67 / 4.67 / 4.80 mm
 | `e2c_L1_32.ts` | 1 | 32 | 8 | -1.9587 | prune below | 14 | `026a119ff51bae96` |
 | `e2c_L2_16.ts` | 2 | 16 | 4 | -1.9075 | prune below | 14 | `bc82b34e2cb9aa12` |
 | `e2c_L3_8.ts` | 3 | 8 | 2 | -1.9576 | prune below | 14 | `a7337f9755f7d9ca` |
-| `e2c_L4_4.ts` | 4 | 4 | 1 | -2.3495 | keep at or above | 11 | `d8ae7da3d022e046` |
+| `e2c_L4_4.ts` | 4 | 4 | 1 | +1.8003 (exported: -2.3495) | keep at or above | 11 | `d8ae7da3d022e046` |
 
 `levels.json` is the same ladder in the `ml_levels` form `[level, width, k, threshold]` the imaging configs take; the
 L4_4 entry is the keep logit (plateau rule, `tables/keep_rule.md`; `tables/keep_threshold.*` records the ghost-fraction-0.2
@@ -31,3 +31,10 @@ models' (SDCC part 38: not re-derived on the fine-tuned logits).
   |d logit| <= 1e-5 x max(|logit|, 1), 0 flips, 0 decision mismatches (`wcfm/scripts/d53_w9ft_parity.py`).
 
 `SHA256SUMS` (from the export) covers the five `.ts`.
+
+- **Decided keep (2026-10-28):** the `levels.json` L4_4 keep is **+1.8003** (was the exported -2.3495), the keep logit Xin chose
+  for PDHD on 2026-10-27 (wcfm doc 53 §10.3 decision 2, option C; the pr_ml doc 27 §8 operating point) and the value the
+  ML-PR recipes `pr_ml/recipes/mlpr_v1*_pdhd.json` pass. `-S deghost_w9ft=true` without a keep
+  now runs at it; an explicit `deghost_w9ft_keep` or `ml_levels` still wins. Compiled-config gate (wcp pr_ml doc 27 §8.9):
+  knob on == the old knob on + the decided keep; recipe, knob-off and explicit-keep configs byte-identical. This is the PDHD production imaging stays traditional (`pdhd/d31` `deghost_w9ft` false); these models serve the knob and the ML-PR branch.
+  The L0-L3 thresholds and the models are unchanged.
