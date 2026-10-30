@@ -1,0 +1,8 @@
+{
+ "keep_logit": -0.22464418411254883,
+ "saturated": false,
+ "gf_all_finite": 0.45339843453117173,
+ "margin": 0.2533984345311717,
+ "min_finite_logit": -10.396455764770508,
+ "rule": "ghost fraction 0.2, pooled held-out 4-strip cells of the training events, L4_4 held-out logits, seed 0"
+}
