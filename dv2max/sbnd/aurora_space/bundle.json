@@ -1,0 +1,1409 @@
+{
+ "format": "dv2max-bundle-v2",
+ "model": "aurora_space",
+ "family": "f0",
+ "family_folds": [
+  0
+ ],
+ "seed": 0,
+ "trained_on_folds": [
+  1
+ ],
+ "x_shift_cm": 0.29,
+ "link_cm": 3.0,
+ "space": {
+  "touch_cm": 1.0,
+  "match_cm": 1.0,
+  "q_ratio": 0.2474433061809911,
+  "link_cm": 3.0,
+  "cache_info": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/cache/aurora_space/cache_info.json",
+  "rule": "space points = the Bee clustering-layer points of every in-scope imaging cluster with a point within touch_cm of a cloud point (T_dlvtx_space / r7 export_r7_space), clusters in increasing id, Bee order; model input = space points (raw q, ids by cluster size) then the cloud (dQ x q_ratio, id of the nearest space point within match_cm, else link_cm components); no space point -> cloud only, dQ unscaled (r7/prep_r7_space_cache.add_space)"
+ },
+ "frame": "models work in the label frame = raw reco frame with x -= sign(x) * x_shift_cm; DV2_Vertex returns x += sign(x) * x_shift_cm (raw reco frame)",
+ "input": "one DL-vertex call: cloud x, y, z (cm), q = dQ * q_scale + q_offset; first n_vertex_rows points = PR-graph vertex rows (ranker candidates 'cand'); traditional vertex = tag_nu; plus the call's space points (see 'space')",
+ "inference": {
+  "device": "cpu",
+  "backend": "torch (dv2max_vertexer.sparse)",
+  "precision": "fp32, no autocast",
+  "min_points": 5,
+  "pass1": {
+   "voxel_cm": 1.0,
+   "views": [
+    "id"
+   ],
+   "shifts": 4,
+   "decode": {
+    "vote_min_p": 0.05,
+    "n_vote": 4096,
+    "ms_bandwidth": 1.0,
+    "ms_iters": 15,
+    "n_seeds": 64,
+    "nms_cm": 10.0,
+    "top_k": 4,
+    "n_peaks": 2,
+    "vote_bin_cm": 1.0,
+    "hot_min_p": 0.02,
+    "max_hot": 4096,
+    "snap": true
+   }
+  },
+  "pass2": {
+   "voxel_cm": 0.3,
+   "views": [
+    "id",
+    "fy"
+   ],
+   "shifts": 4,
+   "decode": {
+    "vote_min_p": 0.05,
+    "n_vote": 4096,
+    "ms_bandwidth": 0.4,
+    "ms_iters": 20,
+    "n_seeds": 32,
+    "nms_cm": 1.0,
+    "top_k": 3,
+    "n_peaks": 1,
+    "vote_bin_cm": 0.25,
+    "hot_min_p": 0.02,
+    "max_hot": 2048,
+    "snap": true,
+    "modes_from_pass1": 4
+   },
+   "crop": {
+    "crop_cm": 64.0,
+    "upstream_frac": 0.25,
+    "frame_radius": 20.0,
+    "heat_input": true,
+    "mode_input": true,
+    "mode_sigma": 2.0
+   }
+  },
+  "ranker": {
+   "model": "lambdamart",
+   "pool_sources": [
+    "cand",
+    "tag",
+    "clusend"
+   ],
+   "expand_fit": false,
+   "dense_radius": 3.0,
+   "anchors": 5,
+   "feature_set": "all",
+   "nms_cm": 2.0,
+   "top_k_out": 10,
+   "calibrate": true
+  }
+ },
+ "ranker": {
+  "fold": 0,
+  "kind": "LightGBM LambdaMART (lambdarank), Booster text",
+  "n_features": 382,
+  "feature_names": [
+   "n_src_tag",
+   "n_src_cand",
+   "n_src_wcnu",
+   "n_src_wcp",
+   "n_src_fitend",
+   "n_src_clusend",
+   "cand_q",
+   "cand_q_rank",
+   "wcp_track",
+   "wcp_shower",
+   "wcp_emax",
+   "d_tag",
+   "dz_tag",
+   "same_clus_tag",
+   "x",
+   "y",
+   "z",
+   "d_wall_x",
+   "d_wall_y",
+   "d_wall_z",
+   "n_hyp_1",
+   "n_hyp_3",
+   "n_hyp_10",
+   "n_cand_ev",
+   "log_n_points_ev",
+   "n_fit_ev",
+   "n_clusters_ev",
+   "wc_ok",
+   "d_nn",
+   "npt_1",
+   "npt_3",
+   "npt_10",
+   "q_1",
+   "q_3",
+   "q_10",
+   "n_dirs_occ",
+   "u_mean",
+   "u_mean_z",
+   "uq_mean",
+   "uq_mean_z",
+   "q_down_frac_10",
+   "clus_logn",
+   "clus_logq",
+   "clus_rank_q",
+   "clus_ext",
+   "clus_frac",
+   "clus_dend",
+   "clus_dz_min",
+   "clus_zfrac",
+   "clus_ymax",
+   "clus_wall",
+   "clus_is_wc0",
+   "clus_is_wc",
+   "d_wcclus",
+   "dz_wcclus_min",
+   "d_fit_nn",
+   "shw_n_5",
+   "shw_frac_5",
+   "ph_on_charge",
+   "ph_n1",
+   "ph_n3",
+   "ph_n10",
+   "ph_q1",
+   "ph_q3",
+   "ph_q10",
+   "ph_one_sided",
+   "ph_shell_dz",
+   "ph_fwd_frac",
+   "ph_n_dirs",
+   "ph_node_d",
+   "ph_node_deg",
+   "ph_n_ends3",
+   "ph_n_out",
+   "ph_n_in",
+   "ph_n_out_bragg",
+   "ph_len_out",
+   "ph_max_len",
+   "ph_bragg_in",
+   "ph_is_wc",
+   "ph_cl_size",
+   "ph_cl_q",
+   "ph_cl_rank",
+   "ph_cl_faces",
+   "ph_cl_frac_z",
+   "ph_cl_dz",
+   "ph_d_tag",
+   "ph_n_cand2",
+   "ph_d_wall",
+   "ph_shw_frac3",
+   "ph_trk_frac3",
+   "ph_wc_starts",
+   "ph_wc_vtx",
+   "pe_d",
+   "pe_p_start",
+   "pe_log_len",
+   "pe_straight",
+   "pe_dir_z",
+   "pe_log_med_dqdx",
+   "pe_bragg_mean3",
+   "pe_bragg_max3",
+   "pe_bragg_slope",
+   "pe_bragg_llr",
+   "pe_end_dqdx",
+   "pe_degree",
+   "pe_n_ends2",
+   "pe_n_cand2",
+   "pe_d_tag",
+   "pe_q_out3",
+   "pe_f_out3",
+   "pe_shw_out5",
+   "pe_d_wall",
+   "pe_upstream",
+   "pe_higher",
+   "pe_chain_len",
+   "cf_point_log_q_0_nn",
+   "cf_point_log_q_0_mean",
+   "cf_point_log_cluster_size_0_nn",
+   "cf_point_log_cluster_size_0_mean",
+   "cf_point_density_0_nn",
+   "cf_point_density_0_mean",
+   "cf_point_density_1_nn",
+   "cf_point_density_1_mean",
+   "cf_point_density_2_nn",
+   "cf_point_density_2_mean",
+   "cf_point_density_3_nn",
+   "cf_point_density_3_mean",
+   "cf_point_density_4_nn",
+   "cf_point_density_4_mean",
+   "cf_point_density_5_nn",
+   "cf_point_density_5_mean",
+   "cf_point_local_shape_0_nn",
+   "cf_point_local_shape_0_mean",
+   "cf_point_local_shape_1_nn",
+   "cf_point_local_shape_1_mean",
+   "cf_point_local_shape_2_nn",
+   "cf_point_local_shape_2_mean",
+   "cf_point_local_shape_3_nn",
+   "cf_point_local_shape_3_mean",
+   "cf_point_local_shape_4_nn",
+   "cf_point_local_shape_4_mean",
+   "cf_point_local_dir_0_nn",
+   "cf_point_local_dir_0_mean",
+   "cf_point_local_dir_1_nn",
+   "cf_point_local_dir_1_mean",
+   "cf_point_local_dir_2_nn",
+   "cf_point_local_dir_2_mean",
+   "cf_point_local_dir_3_nn",
+   "cf_point_local_dir_3_mean",
+   "cf_point_local_dir_4_nn",
+   "cf_point_local_dir_4_mean",
+   "cf_point_local_dir_5_nn",
+   "cf_point_local_dir_5_mean",
+   "cf_point_charge_shift_0_nn",
+   "cf_point_charge_shift_0_mean",
+   "cf_point_charge_shift_1_nn",
+   "cf_point_charge_shift_1_mean",
+   "cf_point_charge_shift_2_nn",
+   "cf_point_charge_shift_2_mean",
+   "cf_point_charge_shift_3_nn",
+   "cf_point_charge_shift_3_mean",
+   "cf_point_charge_shift_4_nn",
+   "cf_point_charge_shift_4_mean",
+   "cf_point_charge_shift_5_nn",
+   "cf_point_charge_shift_5_mean",
+   "cf_point_charge_shift_6_nn",
+   "cf_point_charge_shift_6_mean",
+   "cf_point_shower_tag_0_nn",
+   "cf_point_shower_tag_0_mean",
+   "cf_point_shower_tag_1_nn",
+   "cf_point_shower_tag_1_mean",
+   "cf_point_fit_assoc_0_nn",
+   "cf_point_fit_assoc_0_mean",
+   "cf_point_fit_assoc_1_nn",
+   "cf_point_fit_assoc_1_mean",
+   "cf_point_fit_assoc_2_nn",
+   "cf_point_fit_assoc_2_mean",
+   "cf_point_fit_assoc_3_nn",
+   "cf_point_fit_assoc_3_mean",
+   "cf_point_fit_assoc_4_nn",
+   "cf_point_fit_assoc_4_mean",
+   "cf_point_fit_assoc_5_nn",
+   "cf_point_fit_assoc_5_mean",
+   "cf_point_fit_assoc_6_nn",
+   "cf_point_fit_assoc_6_mean",
+   "cf_point_fit_assoc_7_nn",
+   "cf_point_fit_assoc_7_mean",
+   "cf_point_fit_assoc_8_nn",
+   "cf_point_fit_assoc_8_mean",
+   "cf_point_fit_assoc_9_nn",
+   "cf_point_fit_assoc_9_mean",
+   "cf_point_fit_assoc_10_nn",
+   "cf_point_fit_assoc_10_mean",
+   "cf_point_fit_assoc_11_nn",
+   "cf_point_fit_assoc_11_mean",
+   "cf_point_fit_assoc_12_nn",
+   "cf_point_fit_assoc_12_mean",
+   "cf_point_fit_assoc_13_nn",
+   "cf_point_fit_assoc_13_mean",
+   "cf_point_fit_assoc_14_nn",
+   "cf_point_fit_assoc_14_mean",
+   "cf_point_graph_prox_0_nn",
+   "cf_point_graph_prox_0_mean",
+   "cf_point_graph_prox_1_nn",
+   "cf_point_graph_prox_1_mean",
+   "cf_point_graph_prox_2_nn",
+   "cf_point_graph_prox_2_mean",
+   "cf_point_graph_prox_3_nn",
+   "cf_point_graph_prox_3_mean",
+   "cf_point_cluster_0_nn",
+   "cf_point_cluster_0_mean",
+   "cf_point_cluster_1_nn",
+   "cf_point_cluster_1_mean",
+   "cf_point_cluster_2_nn",
+   "cf_point_cluster_2_mean",
+   "cf_point_cluster_3_nn",
+   "cf_point_cluster_3_mean",
+   "cf_point_cluster_4_nn",
+   "cf_point_cluster_4_mean",
+   "cf_point_cluster_5_nn",
+   "cf_point_cluster_5_mean",
+   "cf_point_cluster_6_nn",
+   "cf_point_cluster_6_mean",
+   "cf_point_cluster_7_nn",
+   "cf_point_cluster_7_mean",
+   "cf_point_cluster_8_nn",
+   "cf_point_cluster_8_mean",
+   "cf_point_cluster_9_nn",
+   "cf_point_cluster_9_mean",
+   "cf_point_walls_0_nn",
+   "cf_point_walls_0_mean",
+   "cf_point_walls_1_nn",
+   "cf_point_walls_1_mean",
+   "cf_point_walls_2_nn",
+   "cf_point_walls_2_mean",
+   "cf_point_walls_3_nn",
+   "cf_point_walls_3_mean",
+   "cf_point_walls_4_nn",
+   "cf_point_walls_4_mean",
+   "cf_point_pr_prox_0_nn",
+   "cf_point_pr_prox_0_mean",
+   "cf_point_pr_prox_1_nn",
+   "cf_point_pr_prox_1_mean",
+   "cf_point_pr_prox_2_nn",
+   "cf_point_pr_prox_2_mean",
+   "cf_fit_fit_log_q_0_nn",
+   "cf_fit_fit_log_q_0_mean",
+   "cf_fit_fit_track_0_nn",
+   "cf_fit_fit_track_0_mean",
+   "cf_fit_fit_track_1_nn",
+   "cf_fit_fit_track_1_mean",
+   "cf_fit_fit_track_2_nn",
+   "cf_fit_fit_track_2_mean",
+   "cf_fit_fit_track_3_nn",
+   "cf_fit_fit_track_3_mean",
+   "cf_fit_fit_track_4_nn",
+   "cf_fit_fit_track_4_mean",
+   "cf_fit_fit_track_5_nn",
+   "cf_fit_fit_track_5_mean",
+   "cf_fit_fit_track_6_nn",
+   "cf_fit_fit_track_6_mean",
+   "cf_fit_fit_track_7_nn",
+   "cf_fit_fit_track_7_mean",
+   "cf_fit_fit_track_8_nn",
+   "cf_fit_fit_track_8_mean",
+   "cf_fit_fit_track_9_nn",
+   "cf_fit_fit_track_9_mean",
+   "cf_fit_fit_track_10_nn",
+   "cf_fit_fit_track_10_mean",
+   "cf_fit_fit_track_11_nn",
+   "cf_fit_fit_track_11_mean",
+   "cf_fit_fit_track_12_nn",
+   "cf_fit_fit_track_12_mean",
+   "cf_fit_fit_track_13_nn",
+   "cf_fit_fit_track_13_mean",
+   "cf_fit_fit_track_14_nn",
+   "cf_fit_fit_track_14_mean",
+   "cf_fit_fit_track_15_nn",
+   "cf_fit_fit_track_15_mean",
+   "cf_fit_fit_track_16_nn",
+   "cf_fit_fit_track_16_mean",
+   "cf_fit_fit_track_17_nn",
+   "cf_fit_fit_track_17_mean",
+   "cf_fit_fit_track_18_nn",
+   "cf_fit_fit_track_18_mean",
+   "cf_fit_fit_track_19_nn",
+   "cf_fit_fit_track_19_mean",
+   "cf_fit_fit_track_20_nn",
+   "cf_fit_fit_track_20_mean",
+   "cf_fit_fit_track_21_nn",
+   "cf_fit_fit_track_21_mean",
+   "cf_cand_cand_desc_0",
+   "cf_cand_cand_desc_1",
+   "cf_cand_cand_desc_2",
+   "cf_cand_cand_desc_3",
+   "cf_cand_cand_desc_4",
+   "cf_cand_cand_desc_5",
+   "cf_cand_cand_desc_6",
+   "cf_cand_cand_desc_7",
+   "cf_cand_cand_desc_8",
+   "cf_cand_cand_desc_9",
+   "cf_cand_cand_desc_10",
+   "cf_cand_cand_desc_11",
+   "cf_cand_cand_desc_12",
+   "cf_cand_cand_desc_13",
+   "cf_cand_cand_desc_14",
+   "cf_cand_cand_desc_15",
+   "cf_cand_cand_desc_16",
+   "cf_cand_cand_desc_17",
+   "cf_cand_cand_desc_18",
+   "cf_cand_cand_desc_19",
+   "cf_cand_cand_desc_20",
+   "cf_cand_cand_desc_21",
+   "cf_cand_cand_desc_22",
+   "cf_cand_cand_desc_23",
+   "cf_cand_cand_desc_24",
+   "cf_cand_cand_desc_25",
+   "cf_cand_cand_desc_26",
+   "cf_cand_cand_desc_27",
+   "cf_cand_cand_desc_28",
+   "cf_cand_cand_desc_29",
+   "cf_cand_cand_desc_30",
+   "cf_cand_cand_desc_31",
+   "cf_cand_cand_desc_32",
+   "cf_cand_cand_desc_33",
+   "cf_cand_cand_misc_0",
+   "cf_cand_cand_misc_1",
+   "cf_event_n_clusters_0",
+   "cf_event_event_summary_0",
+   "cf_event_event_summary_1",
+   "cf_event_event_summary_2",
+   "cf_event_event_summary_3",
+   "cf_event_event_summary_4",
+   "cf_event_event_summary_5",
+   "cf_event_event_summary_6",
+   "cf_event_event_summary_7",
+   "cf_event_event_summary_8",
+   "cf_event_event_summary_9",
+   "cf_event_event_summary_10",
+   "cf_event_event_summary_11",
+   "v_x_is_base",
+   "v_x_n_fitpt",
+   "v_x_n_img",
+   "v_n_pool",
+   "v_p1_d_mode",
+   "v_p1_mode_score",
+   "v_p1_mode_rank",
+   "v_p1_mode_mass1",
+   "v_p1_mode_spread",
+   "v_p1_mode_pri",
+   "v_p1_top_score",
+   "v_p1_d_top",
+   "v_p1_dens",
+   "v_p1_pdens",
+   "v_p1_heat",
+   "v_p1_any",
+   "v_p1_pt",
+   "v_p1_host",
+   "v_p1_host_rank",
+   "v_p1_event",
+   "v_c3_score",
+   "v_c2_shell",
+   "v_c2_cone",
+   "v_p2_d_mode",
+   "v_p2_mode_score",
+   "v_p2_mode_pcrop",
+   "v_p2_mode_sp",
+   "v_p2_mode_mass1",
+   "v_p2_mode_spread",
+   "v_p2_mode_rank",
+   "v_p2_dens",
+   "v_p2_pdens",
+   "v_p2_heat",
+   "v_p2_any",
+   "v_p2_pt",
+   "v_p2_in_crops",
+   "v_p2_pcrop_max",
+   "v_p2_best_sp",
+   "v_p2_d_best",
+   "v_p2_c3_score",
+   "v_p2_c2_shell",
+   "v_p2_c2_cone",
+   "v_cnn_is_mode"
+  ],
+  "trained_on": "union rows of target events of folds != 0, variant row_family(0, fold)",
+  "refit_report": {
+   "refit_report": {
+    "config": "aurora_space",
+    "run": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space",
+    "started": "2026-11-14T03:15:22Z",
+    "modes_tried": [
+     {
+      "mode": "force_col_wise",
+      "n_trees": 579,
+      "calls_compared": 30000,
+      "calls_in_training_run": 30000,
+      "same_top1_within_1e-3cm": 0.9445333333333333,
+      "max_top1_shift_cm": 418.539422135575,
+      "raw_score_diff_top1": {
+       "median": 0.04527891822029284,
+       "p99": 0.2702012876001977,
+       "max": 0.7818181428575546,
+       "n": 30000
+      },
+      "sec": 2470
+     },
+     {
+      "mode": "auto",
+      "n_trees": 579,
+      "calls_compared": 30000,
+      "calls_in_training_run": 30000,
+      "same_top1_within_1e-3cm": 0.9282,
+      "max_top1_shift_cm": 418.539422135575,
+      "raw_score_diff_top1": {
+       "median": 0.06220523316658122,
+       "p99": 0.39538831617434406,
+       "max": 1.1283940965781412,
+       "n": 30000
+      },
+      "sec": 1557
+     },
+     {
+      "mode": "force_row_wise",
+      "n_trees": 579,
+      "calls_compared": 30000,
+      "calls_in_training_run": 30000,
+      "same_top1_within_1e-3cm": 0.9319333333333333,
+      "max_top1_shift_cm": 349.6599479626664,
+      "raw_score_diff_top1": {
+       "median": 0.05071378264814652,
+       "p99": 0.345397744187513,
+       "max": 0.766288358975725,
+       "n": 30000
+      },
+      "sec": 1653
+     }
+    ],
+    "signature": {
+     "refit": {
+      "union": "b17f03f86403",
+      "ranker": "87604ce07fee",
+      "stores": {
+       "f0": [
+        "4db4acb7f7",
+        "e9b9bfa9bf"
+       ]
+      },
+      "ids": "70ab2b2bd5e9"
+     },
+     "training_run": {
+      "union": "b17f03f86403",
+      "ranker": "87604ce07fee",
+      "stores": {
+       "f0": [
+        "4db4acb7f7",
+        "e9b9bfa9bf"
+       ]
+      },
+      "ids": "70ab2b2bd5e9"
+     }
+    },
+    "rows": {
+     "train_rows": 73395368,
+     "train_calls": 300000,
+     "test_rows": 7330135,
+     "test_calls": 30000,
+     "n_features": 382,
+     "load_sec": 668
+    },
+    "early_stopping_check": {
+     "mode": "auto",
+     "best_iteration": 596,
+     "best_iteration_training_run": 579,
+     "n_val_calls": 29370,
+     "n_val_calls_training_run": 29370,
+     "curve_len": [
+      600,
+      600
+     ],
+     "curve_identical": false,
+     "curve_max_abs_diff": 0.0007458209705399899,
+     "sec": 1366
+    },
+    "kept_mode": "force_col_wise",
+    "reproduced": false,
+    "calibrator_tried": [
+     {
+      "mode": "force_col_wise",
+      "calibrated_score_diff_top1": {
+       "median": 0.0005025716600395302,
+       "p99": 0.06088774956545273,
+       "max": 0.14414959073504757,
+       "n": 30000
+      },
+      "sec": 2587
+     },
+     {
+      "mode": "auto",
+      "calibrated_score_diff_top1": {
+       "median": 0.0006875849967511449,
+       "p99": 0.06146889254184102,
+       "max": 0.1558818073770772,
+       "n": 30000
+      },
+      "sec": 2096
+     },
+     {
+      "mode": "force_row_wise",
+      "calibrated_score_diff_top1": {
+       "median": 0.0007733754355858657,
+       "p99": 0.06080147574726789,
+       "max": 0.15060278093073498,
+       "n": 30000
+      },
+      "sec": 2545
+     }
+    ],
+    "calibrator_mode": "force_col_wise",
+    "calibrated_score_diff_top1": {
+     "median": 0.0005025716600395302,
+     "p99": 0.06088774956545273,
+     "max": 0.14414959073504757,
+     "n": 30000
+    },
+    "calibrator_reproduced": false,
+    "files": [
+     "feature_names_fold0.json",
+     "isotonic_fold0.json",
+     "ranker_fold0.txt",
+     "refit_report.json",
+     "refit_test_fold0.csv"
+    ],
+    "finished": "2026-11-14T07:25:36Z",
+    "total_sec": 15013
+   },
+   "score_refit": {
+    "original": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space/preds/fold0_dv2max.csv",
+    "refit": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space/ranker_refit/refit_test_fold0.csv",
+    "denominator": "every labeled hold-out call (no 3 cm cut); as eval_holdout.py",
+    "by_pass": {
+     "pass0_all": {
+      "original": {
+       "lt0.5": 0.8889,
+       "lt1": 0.9291,
+       "lt2": 0.9423,
+       "lt5": 0.9525,
+       "median": 0.146,
+       "n": 15000
+      },
+      "refit": {
+       "lt0.5": 0.8889,
+       "lt1": 0.9288,
+       "lt2": 0.9419,
+       "lt5": 0.9523,
+       "median": 0.146,
+       "n": 15000
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0003,
+       "ci95": [
+        -0.0011,
+        0.0003
+       ],
+       "only_dv2max": 12,
+       "only_ref": 17,
+       "mcnemar_p": 0.45825831964612007
+      },
+      "changed_lt1": {
+       "only_original": 17,
+       "only_refit": 12
+      }
+     },
+     "pass0_bnb": {
+      "original": {
+       "lt0.5": 0.8725,
+       "lt1": 0.9081,
+       "lt2": 0.9228,
+       "lt5": 0.9328,
+       "median": 0.145,
+       "n": 7397
+      },
+      "refit": {
+       "lt0.5": 0.8724,
+       "lt1": 0.9078,
+       "lt2": 0.9225,
+       "lt5": 0.9327,
+       "median": 0.145,
+       "n": 7397
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0003,
+       "ci95": [
+        -0.0014,
+        0.0008
+       ],
+       "only_dv2max": 7,
+       "only_ref": 9,
+       "mcnemar_p": 0.803619384765625
+      },
+      "changed_lt1": {
+       "only_original": 9,
+       "only_refit": 7
+      }
+     },
+     "pass0_nue": {
+      "original": {
+       "lt0.5": 0.9048,
+       "lt1": 0.9496,
+       "lt2": 0.9613,
+       "lt5": 0.9716,
+       "median": 0.147,
+       "n": 7603
+      },
+      "refit": {
+       "lt0.5": 0.905,
+       "lt1": 0.9492,
+       "lt2": 0.9607,
+       "lt5": 0.9715,
+       "median": 0.147,
+       "n": 7603
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0004,
+       "ci95": [
+        -0.0014,
+        0.0005
+       ],
+       "only_dv2max": 5,
+       "only_ref": 8,
+       "mcnemar_p": 0.5810546875
+      },
+      "changed_lt1": {
+       "only_original": 8,
+       "only_refit": 5
+      }
+     },
+     "pass0_nue_cc": {
+      "original": {
+       "lt0.5": 0.9065,
+       "lt1": 0.9511,
+       "lt2": 0.9631,
+       "lt5": 0.9734,
+       "median": 0.147,
+       "n": 7531
+      },
+      "refit": {
+       "lt0.5": 0.9068,
+       "lt1": 0.9507,
+       "lt2": 0.9624,
+       "lt5": 0.9732,
+       "median": 0.147,
+       "n": 7531
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0004,
+       "ci95": [
+        -0.0013,
+        0.0005
+       ],
+       "only_dv2max": 5,
+       "only_ref": 8,
+       "mcnemar_p": 0.5810546875
+      },
+      "changed_lt1": {
+       "only_original": 8,
+       "only_refit": 5
+      }
+     },
+     "pass0_numu_cc": {
+      "original": {
+       "lt0.5": 0.9184,
+       "lt1": 0.9547,
+       "lt2": 0.9674,
+       "lt5": 0.9748,
+       "median": 0.135,
+       "n": 5958
+      },
+      "refit": {
+       "lt0.5": 0.9188,
+       "lt1": 0.9547,
+       "lt2": 0.9678,
+       "lt5": 0.9748,
+       "median": 0.135,
+       "n": 5958
+      },
+      "paired_refit_vs_original": {
+       "diff": 0.0,
+       "ci95": [
+        -0.0008,
+        0.0008
+       ],
+       "only_dv2max": 4,
+       "only_ref": 4,
+       "mcnemar_p": 1.0
+      },
+      "changed_lt1": {
+       "only_original": 4,
+       "only_refit": 4
+      }
+     },
+     "pass0_nc": {
+      "original": {
+       "lt0.5": 0.6843,
+       "lt1": 0.7187,
+       "lt2": 0.7399,
+       "lt5": 0.7598,
+       "median": 0.212,
+       "n": 1511
+      },
+      "refit": {
+       "lt0.5": 0.6823,
+       "lt1": 0.7174,
+       "lt2": 0.7373,
+       "lt5": 0.7598,
+       "median": 0.214,
+       "n": 1511
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0013,
+       "ci95": [
+        -0.0053,
+        0.002
+       ],
+       "only_dv2max": 3,
+       "only_ref": 5,
+       "mcnemar_p": 0.7265625
+      },
+      "changed_lt1": {
+       "only_original": 5,
+       "only_refit": 3
+      }
+     },
+     "pass1_all": {
+      "original": {
+       "lt0.5": 0.8898,
+       "lt1": 0.9285,
+       "lt2": 0.9415,
+       "lt5": 0.9519,
+       "median": 0.146,
+       "n": 15000
+      },
+      "refit": {
+       "lt0.5": 0.8892,
+       "lt1": 0.9284,
+       "lt2": 0.9409,
+       "lt5": 0.9515,
+       "median": 0.146,
+       "n": 15000
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0001,
+       "ci95": [
+        -0.0007,
+        0.0005
+       ],
+       "only_dv2max": 9,
+       "only_ref": 10,
+       "mcnemar_p": 1.0
+      },
+      "changed_lt1": {
+       "only_original": 10,
+       "only_refit": 9
+      }
+     },
+     "pass1_bnb": {
+      "original": {
+       "lt0.5": 0.8733,
+       "lt1": 0.9063,
+       "lt2": 0.9219,
+       "lt5": 0.9324,
+       "median": 0.145,
+       "n": 7397
+      },
+      "refit": {
+       "lt0.5": 0.8724,
+       "lt1": 0.9062,
+       "lt2": 0.921,
+       "lt5": 0.9319,
+       "median": 0.144,
+       "n": 7397
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.0001,
+       "ci95": [
+        -0.0011,
+        0.0008
+       ],
+       "only_dv2max": 6,
+       "only_ref": 7,
+       "mcnemar_p": 1.0
+      },
+      "changed_lt1": {
+       "only_original": 7,
+       "only_refit": 6
+      }
+     },
+     "pass1_nue": {
+      "original": {
+       "lt0.5": 0.9058,
+       "lt1": 0.95,
+       "lt2": 0.9605,
+       "lt5": 0.9709,
+       "median": 0.147,
+       "n": 7603
+      },
+      "refit": {
+       "lt0.5": 0.9056,
+       "lt1": 0.95,
+       "lt2": 0.9603,
+       "lt5": 0.9705,
+       "median": 0.147,
+       "n": 7603
+      },
+      "paired_refit_vs_original": {
+       "diff": 0.0,
+       "ci95": [
+        -0.0007,
+        0.0007
+       ],
+       "only_dv2max": 3,
+       "only_ref": 3,
+       "mcnemar_p": 1.0
+      },
+      "changed_lt1": {
+       "only_original": 3,
+       "only_refit": 3
+      }
+     },
+     "pass1_nue_cc": {
+      "original": {
+       "lt0.5": 0.9076,
+       "lt1": 0.9515,
+       "lt2": 0.9623,
+       "lt5": 0.9725,
+       "median": 0.147,
+       "n": 7531
+      },
+      "refit": {
+       "lt0.5": 0.9073,
+       "lt1": 0.9515,
+       "lt2": 0.962,
+       "lt5": 0.9721,
+       "median": 0.147,
+       "n": 7531
+      },
+      "paired_refit_vs_original": {
+       "diff": 0.0,
+       "ci95": [
+        -0.0007,
+        0.0007
+       ],
+       "only_dv2max": 3,
+       "only_ref": 3,
+       "mcnemar_p": 1.0
+      },
+      "changed_lt1": {
+       "only_original": 3,
+       "only_refit": 3
+      }
+     },
+     "pass1_numu_cc": {
+      "original": {
+       "lt0.5": 0.9196,
+       "lt1": 0.9532,
+       "lt2": 0.9673,
+       "lt5": 0.975,
+       "median": 0.136,
+       "n": 5958
+      },
+      "refit": {
+       "lt0.5": 0.9189,
+       "lt1": 0.9535,
+       "lt2": 0.9668,
+       "lt5": 0.9743,
+       "median": 0.135,
+       "n": 5958
+      },
+      "paired_refit_vs_original": {
+       "diff": 0.0003,
+       "ci95": [
+        -0.0005,
+        0.0012
+       ],
+       "only_dv2max": 5,
+       "only_ref": 3,
+       "mcnemar_p": 0.7265625
+      },
+      "changed_lt1": {
+       "only_original": 3,
+       "only_refit": 5
+      }
+     },
+     "pass1_nc": {
+      "original": {
+       "lt0.5": 0.6837,
+       "lt1": 0.7161,
+       "lt2": 0.7359,
+       "lt5": 0.7584,
+       "median": 0.211,
+       "n": 1511
+      },
+      "refit": {
+       "lt0.5": 0.6817,
+       "lt1": 0.7141,
+       "lt2": 0.734,
+       "lt5": 0.7584,
+       "median": 0.212,
+       "n": 1511
+      },
+      "paired_refit_vs_original": {
+       "diff": -0.002,
+       "ci95": [
+        -0.0053,
+        0.0007
+       ],
+       "only_dv2max": 1,
+       "only_ref": 4,
+       "mcnemar_p": 0.375
+      },
+      "changed_lt1": {
+       "only_original": 4,
+       "only_refit": 1
+      }
+     }
+    }
+   }
+  },
+  "source_dir": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space/ranker_refit"
+ },
+ "files": {
+  "pass1": {
+   "path": "pass1.pt",
+   "sha256": "193ef28d7170c7179148832a585c4dc4eddd84069c0233a0a14c0ac79ec5fa89",
+   "bytes": 80453174
+  },
+  "pass2": {
+   "path": "pass2.pt",
+   "sha256": "bd42b0c3ffecbe62dae606a2110cbf3e2f820e10bdbdb82944ae294945043619",
+   "bytes": 80450374
+  },
+  "ranker": {
+   "path": "ranker_fold0.txt",
+   "sha256": "e536850272bb3e86fec520149a67247ad13e58579d29f79e710279a5b87794ad",
+   "bytes": 4221737
+  },
+  "isotonic": {
+   "path": "isotonic_fold0.json",
+   "sha256": "0ad6bd7f86b8544025ed88ef271c7dd1eee899de5fd1254b5f0792554b5b4760",
+   "bytes": 11695
+  }
+ },
+ "source": {
+  "run": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space",
+  "pass1": {
+   "final_pt": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space/models/pass1/f0/seed0/final.pt",
+   "final_pt_sha256": "a2b53531b7b7070066c882eb7d0835e19b46afc2bb18f7fb87500c5bcd88b013",
+   "train_sig": "cf4f82db03ab",
+   "train_folds": [
+    1
+   ],
+   "steps": 140000,
+   "final": "swa",
+   "swa_n_averaged": 141,
+   "compute_dtype": "torch.float16",
+   "backend": "spconv",
+   "n_params": 20068567
+  },
+  "pass2": {
+   "final_pt": "/lus/eagle/projects/neutrinoGPU/snehadri/sbnd-vertexer/dv2max/runs/aurora_space/models/pass2/f0/seed0/final.pt",
+   "final_pt_sha256": "8c1ed9326f127d3f4500667162af875005caa3c2cfcc9edf46ce3b51542a9546",
+   "train_sig": "aec034c56241",
+   "train_folds": [
+    1
+   ],
+   "steps": 70000,
+   "final": "swa",
+   "swa_n_averaged": 71,
+   "compute_dtype": "torch.float16",
+   "backend": "spconv",
+   "n_params": 20068153
+  }
+ },
+ "config": {
+  "name": "aurora_space",
+  "inputs": {
+   "point_features": "imaging",
+   "marks": false,
+   "prong_geometry": false,
+   "mark_dropout": 0.15,
+   "mark_sigma_cm": 0.7,
+   "mark_channels": null,
+   "event_absent": []
+  },
+  "pass1": {
+   "enabled": true,
+   "voxel": 1.0,
+   "levels": 7,
+   "channels": [
+    32,
+    48,
+    64,
+    96,
+    128,
+    160,
+    192
+   ],
+   "blocks": 2,
+   "large_kernel": {
+    "enabled": true,
+    "size": 13,
+    "levels": 2
+   },
+   "point_branch": {
+    "enabled": true,
+    "dim": 64
+   },
+   "film": true,
+   "ctx_dim": 128,
+   "heads": {
+    "offset": true,
+    "cluster": true,
+    "event": true,
+    "point": true,
+    "shell_cone": false,
+    "listwise": false,
+    "deep_supervision": true
+   },
+   "target": {
+    "sigma": 3.0,
+    "hit_radius": 1.0,
+    "hit_sigma": 0.3,
+    "offset_radius": 10.0,
+    "shell_edges": [
+     0.5,
+     1.0,
+     2.0,
+     4.0,
+     8.0,
+     16.0
+    ],
+    "cone_radius": 30.0,
+    "host_cm": 3.0,
+    "heat_loss": "auto",
+    "hard_neg_radius": 1.5,
+    "hard_neg_min_d": 2.0
+   },
+   "loss": {
+    "heat": 1.0,
+    "any": 0.5,
+    "offset": 1.0,
+    "cluster": 0.5,
+    "event": 0.2,
+    "crop": 0.5,
+    "point": 0.5,
+    "deep": 0.5,
+    "shell": 0.3,
+    "cone": 0.3,
+    "listwise": 0.5,
+    "topk_frac": 0.2,
+    "focal": 1.0,
+    "hard_neg": 0.0
+   },
+   "aug": {
+    "p_mirror_y": 0.0,
+    "p_mirror_x": 0.5,
+    "gain": 0.1,
+    "point_dropout": 0.1,
+    "subvoxel": true,
+    "vertex_hole_p": 0.0
+   },
+   "train": {
+    "steps": 140000,
+    "batch": 8,
+    "lr": 0.002,
+    "weight_decay": 0.05,
+    "warmup": 1000,
+    "clip": 5.0,
+    "amp": "fp16",
+    "ema": 0.999,
+    "swa": {
+     "enabled": true,
+     "start_frac": 0.75,
+     "every": 250,
+     "bn_batches": 64
+    },
+    "final": "swa",
+    "log_every": 50,
+    "val_every": 2000,
+    "val_events": 128,
+    "ckpt_every": 1000
+   },
+   "infer": {
+    "views": [
+     "id"
+    ],
+    "shifts": 4,
+    "vote_min_p": 0.05,
+    "n_vote": 4096,
+    "ms_bandwidth": 1.0,
+    "ms_iters": 15,
+    "n_seeds": 64,
+    "nms_cm": 10.0,
+    "top_k": 4,
+    "n_peaks": 2,
+    "vote_bin_cm": 1.0,
+    "hot_min_p": 0.02,
+    "max_hot": 4096,
+    "snap": true
+   },
+   "kind": "whole"
+  },
+  "pass2": {
+   "enabled": true,
+   "voxel": 0.3,
+   "levels": 7,
+   "channels": [
+    32,
+    48,
+    64,
+    96,
+    128,
+    160,
+    192
+   ],
+   "blocks": 2,
+   "large_kernel": {
+    "enabled": true,
+    "size": 13,
+    "levels": 2
+   },
+   "point_branch": {
+    "enabled": true,
+    "dim": 64
+   },
+   "film": true,
+   "ctx_dim": 128,
+   "heads": {
+    "offset": true,
+    "cluster": false,
+    "event": true,
+    "point": true,
+    "shell_cone": false,
+    "listwise": false,
+    "deep_supervision": true
+   },
+   "target": {
+    "sigma": 1.0,
+    "hit_radius": 1.0,
+    "hit_sigma": 0.3,
+    "offset_radius": 10.0,
+    "shell_edges": [
+     0.5,
+     1.0,
+     2.0,
+     4.0,
+     8.0,
+     16.0
+    ],
+    "cone_radius": 30.0,
+    "host_cm": 3.0,
+    "heat_loss": "auto",
+    "hard_neg_radius": 1.5,
+    "hard_neg_min_d": 2.0
+   },
+   "loss": {
+    "heat": 1.0,
+    "any": 0.5,
+    "offset": 1.0,
+    "cluster": 0.5,
+    "event": 0.2,
+    "crop": 0.5,
+    "point": 0.5,
+    "deep": 0.5,
+    "shell": 0.3,
+    "cone": 0.3,
+    "listwise": 0.5,
+    "topk_frac": 0.2,
+    "focal": 1.0,
+    "hard_neg": 0.0
+   },
+   "aug": {
+    "p_mirror_y": 0.5,
+    "p_mirror_x": 0.0,
+    "gain": 0.1,
+    "point_dropout": 0.1,
+    "subvoxel": true,
+    "vertex_hole_p": 0.0
+   },
+   "train": {
+    "steps": 70000,
+    "batch": 16,
+    "lr": 0.002,
+    "weight_decay": 0.05,
+    "warmup": 800,
+    "clip": 5.0,
+    "amp": "fp16",
+    "ema": 0.999,
+    "swa": {
+     "enabled": true,
+     "start_frac": 0.75,
+     "every": 250,
+     "bn_batches": 64
+    },
+    "final": "swa",
+    "log_every": 50,
+    "val_every": 2000,
+    "val_events": 128,
+    "ckpt_every": 1000
+   },
+   "infer": {
+    "views": [
+     "id",
+     "fy"
+    ],
+    "shifts": 4,
+    "vote_min_p": 0.05,
+    "n_vote": 4096,
+    "ms_bandwidth": 0.4,
+    "ms_iters": 20,
+    "n_seeds": 32,
+    "nms_cm": 1.0,
+    "top_k": 3,
+    "n_peaks": 1,
+    "vote_bin_cm": 0.25,
+    "hot_min_p": 0.02,
+    "max_hot": 2048,
+    "snap": true,
+    "modes_from_pass1": 4
+   },
+   "kind": "crop",
+   "crop_cm": 64.0,
+   "upstream_frac": 0.25,
+   "frame_radius": 20.0,
+   "heat_input": true,
+   "mode_input": true,
+   "mode_sigma": 2.0,
+   "crops": {
+    "p_jitter": 0.5,
+    "max_rank": 4,
+    "jitter_fallback_sigma": 1.5,
+    "jitter_max_cm": 16.0,
+    "per_event": 2,
+    "decoys_per_event": 0,
+    "p_wide": 0.6,
+    "wide_min_cm": 1.0,
+    "wide_max_cm": 8.0,
+    "wide_shift_heat": true
+   }
+  },
+  "ranker": {
+   "enabled": true,
+   "model": "lambdamart",
+   "compare_pointwise": false,
+   "relevance_cm": [
+    0.5,
+    1.0,
+    2.0
+   ],
+   "expand_fit": false,
+   "dense_radius": 3.0,
+   "anchors": 5,
+   "pool_sources": [
+    "cand",
+    "tag",
+    "clusend"
+   ],
+   "feature_set": "all",
+   "nms_cm": 2.0,
+   "top_k_out": 10,
+   "calibrate": true,
+   "workers": 14,
+   "chunk": 8,
+   "lgbm": {
+    "n_estimators": 600,
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "min_child_samples": 50,
+    "subsample": 0.8,
+    "subsample_freq": 1,
+    "colsample_bytree": 0.6,
+    "reg_lambda": 1.0,
+    "lambdarank_truncation_level": 4,
+    "verbose": -1,
+    "n_jobs": 64
+   },
+   "early_stopping": {
+    "enabled": true,
+    "val_frac": 0.1,
+    "rounds": 50,
+    "refit": true
+   },
+   "pointwise": {
+    "max_iter": 400,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 31,
+    "l2_regularization": 1.0
+   }
+  },
+  "data": {
+   "min_points": 5,
+   "samples": [
+    "nue",
+    "bnb"
+   ]
+  }
+ },
+ "created": "2026-11-14T15:08:09+00:00",
+ "created_by": "dv2max_vertexer/make_bundle.py"
+}
