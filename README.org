@@ -236,3 +236,9 @@ dunereco find them on =WIRECELL_PATH=:
 Made with larwirecell (features/wcls-wires) =WireSchemaFileWriter=:
 
 - [[./fdvd-v8-fromgeo-pairtpc.json.bz2]] FD-VD wires from the GeGeDe v8 full 10 kt GDML (=dunevd10kt_3view_30deg_v8_full10kt_ggd.gdml=, dunecore feature/bnayak_vd_full10kt_ggd) through LArSoft's =CRPWireReadoutGeom=, =pair-tpc= grouping, correction 4.  wire-cell-phlex's GDML transform reproduces it wire for wire.
+
+** DUNE FD-HD files used by dune-config
+
+Copied from dunereco (=dunereco/DUNEWireCell/dune10kt-1x2x6/=):
+
+- [[./dune-garfield-1d60563.json.bz2]] DUNE APA 1D Garfield field response for a drift speed of 1.60563 mm/us (same path layout as =dune-garfield-1d565=, which assumes 1.565 mm/us; origin 100 mm from the collection wires; dunereco 567fbc41, W. Gu, 2023-06-12).  dune-config =fdhd= uses it, as dunereco's =dune10kt-1x2x6= and =dune10kt-hd= do.
