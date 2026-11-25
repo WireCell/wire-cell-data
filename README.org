@@ -222,3 +222,23 @@ provenance (source training repo, run-id, training shape, output activation).
   [[./dnnroi/pdhd/README.md]] for full provenance.
 
 
+
+** ProtoDUNE-VD and FD-VD files used by dune-config
+
+Copied from dunereco (=dunereco/DUNEWireCell/protodunevd/=, where the
+dunereco Wire-Cell configuration reads them) so that configurations outside
+dunereco find them on =WIRECELL_PATH=:
+
+- [[./protodunevd_FR_norminal_260324.json.bz2]] nominal ProtoDUNE-VD field response (origin 181 mm from the W strips, speed 1.53 mm/us; dunereco 05fcd229, X. Ning, 2026-03-24).
+- [[./pdvd-bottom-noise-spectra-v1.json.bz2]] ProtoDUNE-VD bottom drift (BDE) noise spectra, adjusted to CRP5 cold box data (dunereco 5806fc99, W. Gu, 2024-03-12).
+- [[./pdvd-top-noise-spectra-v2.json.bz2]] ProtoDUNE-VD top drift (TDE) noise spectra and gain (dunereco 12ef8da2, W. Gu, 2024-03-22).
+
+Made with larwirecell (features/wcls-wires) =WireSchemaFileWriter=:
+
+- [[./fdvd-v8-fromgeo-pairtpc.json.bz2]] FD-VD wires from the GeGeDe v8 full 10 kt GDML (=dunevd10kt_3view_30deg_v8_full10kt_ggd.gdml=, dunecore feature/bnayak_vd_full10kt_ggd) through LArSoft's =CRPWireReadoutGeom=, =pair-tpc= grouping, correction 4.  wire-cell-phlex's GDML transform reproduces it wire for wire.
+
+** DUNE FD-HD files used by dune-config
+
+Copied from dunereco (=dunereco/DUNEWireCell/dune10kt-1x2x6/=):
+
+- [[./dune-garfield-1d60563.json.bz2]] DUNE APA 1D Garfield field response for a drift speed of 1.60563 mm/us (same path layout as =dune-garfield-1d565=, which assumes 1.565 mm/us; origin 100 mm from the collection wires; dunereco 567fbc41, W. Gu, 2023-06-12).  dune-config =fdhd= uses it, as dunereco's =dune10kt-1x2x6= and =dune10kt-hd= do.
